@@ -1,0 +1,2909 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Propostas Comerciais — NEWPC</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════════
+   DESIGN TOKENS — Identidade NEWPC
+═══════════════════════════════════════════════ */
+:root {
+  --verde:        #1a6b2a;
+  --verde-vivo:   #22a63a;
+  --verde-soft:   #e8f5eb;
+  --azul:         #0f2c4a;
+  --azul-med:     #1b4876;
+  --azul-soft:    #eaf0f8;
+  --ouro:         #c9952a;
+  --ouro-soft:    #fdf6e7;
+  --vermelho:     #c63838;
+  --vermelho-soft:#fdeaea;
+  --cinza-1:      #f4f5f7;
+  --cinza-2:      #e8eaed;
+  --cinza-3:      #c4c9d1;
+  --cinza-4:      #8a929e;
+  --cinza-5:      #4a5260;
+  --preto:        #111827;
+  --branco:       #ffffff;
+
+  --r:            10px;
+  --r-sm:         6px;
+  --r-lg:         14px;
+  --tr:           all .15s ease;
+  --shadow-sm:    0 1px 3px rgba(15,44,74,.08);
+  --shadow:       0 4px 16px rgba(15,44,74,.10);
+  --shadow-lg:    0 12px 40px rgba(15,44,74,.18);
+}
+
+/* ═══════════════════════════════════════════════
+   RESET E BASE
+═══════════════════════════════════════════════ */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body {
+  font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--cinza-1);
+  color: var(--preto);
+  -webkit-font-smoothing: antialiased;
+  font-size: 14px;
+  line-height: 1.5;
+}
+button { font-family: inherit; cursor: pointer; border: none; background: none; }
+input, select, textarea { font-family: inherit; font-size: inherit; }
+a { text-decoration: none; color: inherit; }
+
+/* ═══════════════════════════════════════════════
+   AUTH GATE / BOOT SCREEN
+═══════════════════════════════════════════════ */
+.boot-screen {
+  position: fixed;
+  inset: 0;
+  background: linear-gradient(135deg, var(--azul) 0%, #061831 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 99999;
+  color: white;
+  gap: 20px;
+  padding: 24px;
+  text-align: center;
+}
+.boot-screen.hidden { display: none; }
+.boot-logo-wrap {
+  background: white;
+  padding: 18px 28px;
+  border-radius: 12px;
+  margin-bottom: 8px;
+  box-shadow: 0 8px 32px rgba(0,0,0,.2);
+}
+.boot-logo-img {
+  height: 42px;
+  display: block;
+}
+.boot-logo-fallback {
+  background: linear-gradient(135deg, var(--azul) 0%, var(--verde) 100%);
+  color: white;
+  font-weight: 900;
+  font-size: 22px;
+  letter-spacing: 3px;
+  padding: 14px 22px;
+  border-radius: 10px;
+  font-family: 'Outfit', sans-serif;
+  display: none;
+}
+.boot-spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid rgba(255,255,255,.15);
+  border-top-color: var(--verde-vivo);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.boot-text {
+  font-size: 14px;
+  color: rgba(255,255,255,.7);
+  letter-spacing: .5px;
+}
+.boot-error {
+  background: rgba(198,56,56,.15);
+  border: 1px solid rgba(198,56,56,.4);
+  color: #ff8989;
+  padding: 16px 22px;
+  border-radius: 8px;
+  font-size: 13px;
+  max-width: 460px;
+  display: none;
+  line-height: 1.6;
+}
+.boot-error.show { display: block; }
+.boot-error strong { color: white; }
+.boot-link {
+  color: white;
+  text-decoration: underline;
+  font-size: 13px;
+  margin-top: 8px;
+  display: none;
+}
+.boot-link.show { display: inline-block; }
+
+/* ═══════════════════════════════════════════════
+   APP — TOPBAR
+═══════════════════════════════════════════════ */
+.app { display: none; min-height: 100vh; }
+.app.show { display: block; }
+
+.topbar {
+  background: white;
+  height: 68px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 28px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  border-bottom: 1px solid var(--cinza-2);
+  box-shadow: 0 1px 3px rgba(15,44,74,.04);
+}
+.topbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+.btn-voltar-hub {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--cinza-1);
+  color: var(--cinza-5);
+  padding: 8px 14px;
+  border-radius: var(--r-sm);
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid var(--cinza-2);
+  cursor: pointer;
+  transition: var(--tr);
+  text-decoration: none;
+}
+.btn-voltar-hub:hover {
+  background: var(--azul);
+  color: white;
+  border-color: var(--azul);
+}
+.topbar-logo {
+  height: 32px;
+  width: auto;
+  display: block;
+}
+.topbar-logo-fallback {
+  background: linear-gradient(135deg, var(--azul) 0%, var(--verde) 100%);
+  color: white;
+  font-weight: 900;
+  font-size: 12px;
+  letter-spacing: 1.5px;
+  padding: 6px 12px;
+  border-radius: 5px;
+  display: none;
+}
+.topbar-divider {
+  width: 1px;
+  height: 26px;
+  background: var(--cinza-2);
+}
+.topbar-info {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+.topbar-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--azul);
+}
+.topbar-sub {
+  font-size: 11px;
+  color: var(--cinza-4);
+  letter-spacing: .3px;
+  margin-top: 2px;
+}
+.topbar-user {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.user-info {
+  text-align: right;
+  line-height: 1.2;
+}
+.user-name {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--azul);
+}
+.user-role {
+  font-size: 10.5px;
+  color: var(--cinza-4);
+  margin-top: 1px;
+}
+.user-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--azul) 0%, var(--verde) 100%);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 14px;
+  box-shadow: 0 2px 6px rgba(15,44,74,.15);
+}
+
+/* ═══════════════════════════════════════════════
+   MAIN CONTENT
+═══════════════════════════════════════════════ */
+.main {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 28px;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+.page-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--azul);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.page-title-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: var(--verde-soft);
+  color: var(--verde);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+}
+
+/* Botão verde principal NEWPC */
+.btn-primary {
+  background: var(--verde);
+  color: white;
+  padding: 10px 18px;
+  border-radius: var(--r-sm);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: .3px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: var(--tr);
+  box-shadow: 0 2px 4px rgba(26,107,42,.2);
+}
+.btn-primary:hover {
+  background: #145520;
+  box-shadow: 0 4px 8px rgba(26,107,42,.3);
+  transform: translateY(-1px);
+}
+
+/* ═══════════════════════════════════════════════
+   DASHBOARD — Estatísticas
+═══════════════════════════════════════════════ */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 28px;
+}
+.stat-card {
+  background: white;
+  border-radius: var(--r);
+  padding: 18px 20px;
+  box-shadow: var(--shadow-sm);
+  border-left: 4px solid var(--cinza-3);
+  transition: var(--tr);
+  cursor: default;
+}
+.stat-card:hover { box-shadow: var(--shadow); transform: translateY(-1px); }
+.stat-card.total { border-left-color: var(--azul); }
+.stat-card.enviada { border-left-color: var(--ouro); }
+.stat-card.aprovada { border-left-color: var(--verde); }
+.stat-card.valor { border-left-color: var(--verde-vivo); }
+
+.stat-label {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  color: var(--cinza-4);
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.stat-value {
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--azul);
+  font-family: 'JetBrains Mono', monospace;
+  letter-spacing: -.5px;
+  line-height: 1.1;
+}
+.stat-sub {
+  font-size: 11px;
+  color: var(--cinza-4);
+  margin-top: 4px;
+}
+
+/* ═══════════════════════════════════════════════
+   DASHBOARD — Filtros e Busca
+═══════════════════════════════════════════════ */
+.filters-bar {
+  background: white;
+  border-radius: var(--r);
+  padding: 14px 18px;
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 20px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.search-input {
+  flex: 1;
+  min-width: 220px;
+  padding: 9px 14px 9px 36px;
+  border: 1.5px solid var(--cinza-2);
+  border-radius: var(--r-sm);
+  font-size: 13px;
+  background: var(--cinza-1) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%238a929e' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'/%3E%3C/svg%3E") no-repeat 12px center;
+  transition: var(--tr);
+}
+.search-input:focus {
+  outline: none;
+  border-color: var(--verde);
+  background-color: white;
+}
+
+.filter-select {
+  padding: 8px 32px 8px 12px;
+  border: 1.5px solid var(--cinza-2);
+  border-radius: var(--r-sm);
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--cinza-5);
+  background: white url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%234a5260' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") no-repeat right 10px center;
+  cursor: pointer;
+  appearance: none;
+}
+.filter-select:hover { border-color: var(--cinza-3); }
+.filter-select:focus { outline: none; border-color: var(--verde); }
+
+.btn-limpar-filtros {
+  padding: 8px 12px;
+  font-size: 11.5px;
+  color: var(--cinza-4);
+  background: transparent;
+  border: 1px dashed var(--cinza-3);
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  transition: var(--tr);
+}
+.btn-limpar-filtros:hover { color: var(--vermelho); border-color: var(--vermelho); }
+
+/* ═══════════════════════════════════════════════
+   DASHBOARD — Lista de Propostas
+═══════════════════════════════════════════════ */
+.propostas-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.proposta-card {
+  background: white;
+  border-radius: var(--r);
+  padding: 16px 20px;
+  box-shadow: var(--shadow-sm);
+  border-left: 4px solid var(--cinza-3);
+  display: grid;
+  grid-template-columns: auto 1fr auto auto;
+  gap: 16px;
+  align-items: center;
+  transition: var(--tr);
+  cursor: pointer;
+}
+.proposta-card:hover {
+  box-shadow: var(--shadow);
+  transform: translateX(2px);
+}
+.proposta-card.rascunho { border-left-color: var(--cinza-3); }
+.proposta-card.enviada { border-left-color: var(--ouro); }
+.proposta-card.aprovada { border-left-color: var(--verde); }
+.proposta-card.recusada { border-left-color: var(--vermelho); }
+
+.proposta-tipo-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+.proposta-tipo-icon.venda { background: var(--azul-soft); color: var(--azul); }
+.proposta-tipo-icon.locacao_mensal { background: var(--verde-soft); color: var(--verde); }
+.proposta-tipo-icon.diaria { background: var(--ouro-soft); color: var(--ouro); }
+
+.proposta-info { min-width: 0; }
+.proposta-header-line {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 4px;
+  flex-wrap: wrap;
+}
+.proposta-numero {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--cinza-4);
+  background: var(--cinza-1);
+  padding: 2px 8px;
+  border-radius: 4px;
+  letter-spacing: .3px;
+}
+.proposta-cliente {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--preto);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.proposta-meta {
+  font-size: 11.5px;
+  color: var(--cinza-4);
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.proposta-meta .sep { color: var(--cinza-3); }
+
+.status-badge {
+  font-size: 9.5px;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  display: inline-block;
+}
+.status-badge.rascunho { background: var(--cinza-1); color: var(--cinza-5); }
+.status-badge.enviada { background: var(--ouro-soft); color: var(--ouro); }
+.status-badge.aprovada { background: var(--verde-soft); color: var(--verde); }
+.status-badge.recusada { background: var(--vermelho-soft); color: var(--vermelho); }
+
+.proposta-valor {
+  text-align: right;
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--azul);
+  white-space: nowrap;
+}
+.proposta-valor-sub {
+  font-size: 10.5px;
+  font-weight: 500;
+  color: var(--cinza-4);
+  letter-spacing: .3px;
+  margin-top: 2px;
+}
+
+.proposta-acoes {
+  display: flex;
+  gap: 4px;
+  opacity: 0;
+  transition: var(--tr);
+}
+.proposta-card:hover .proposta-acoes { opacity: 1; }
+.proposta-acao-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  background: transparent;
+  border: 1px solid var(--cinza-2);
+  color: var(--cinza-5);
+  font-size: 13px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--tr);
+}
+.proposta-acao-btn:hover {
+  background: var(--azul);
+  color: white;
+  border-color: var(--azul);
+}
+.proposta-acao-btn.del:hover {
+  background: var(--vermelho);
+  border-color: var(--vermelho);
+}
+
+/* ═══════════════════════════════════════════════
+   ESTADOS — Vazio, Carregando
+═══════════════════════════════════════════════ */
+.empty-state {
+  background: white;
+  border-radius: var(--r);
+  padding: 60px 30px;
+  text-align: center;
+  box-shadow: var(--shadow-sm);
+}
+.empty-icon {
+  font-size: 56px;
+  opacity: .25;
+  margin-bottom: 14px;
+}
+.empty-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--cinza-5);
+  margin-bottom: 6px;
+}
+.empty-text {
+  font-size: 13.5px;
+  color: var(--cinza-4);
+  max-width: 480px;
+  margin: 0 auto 18px;
+  line-height: 1.6;
+}
+
+.loading-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--cinza-4);
+  font-size: 13px;
+}
+.loading-spinner {
+  width: 28px;
+  height: 28px;
+  border: 3px solid var(--cinza-2);
+  border-top-color: var(--verde);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 12px;
+}
+
+/* ═══════════════════════════════════════════════
+   EDITOR — Modal Full Screen
+═══════════════════════════════════════════════ */
+.editor-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--cinza-1);
+  z-index: 1000;
+  display: none;
+  flex-direction: column;
+}
+.editor-overlay.open { display: flex; }
+
+.editor-topbar {
+  background: white;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  border-bottom: 1px solid var(--cinza-2);
+  box-shadow: 0 1px 3px rgba(15,44,74,.04);
+  flex-shrink: 0;
+}
+.editor-topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.editor-back-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: var(--cinza-1);
+  color: var(--cinza-5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  cursor: pointer;
+  border: 1px solid var(--cinza-2);
+  transition: var(--tr);
+}
+.editor-back-btn:hover { background: var(--azul); color: white; border-color: var(--azul); }
+
+.editor-title {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+.editor-title-main {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--azul);
+}
+.editor-title-sub {
+  font-size: 11.5px;
+  color: var(--cinza-4);
+  font-family: 'JetBrains Mono', monospace;
+  letter-spacing: .3px;
+  margin-top: 2px;
+}
+
+.editor-topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.autosave-indicator {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  color: var(--cinza-4);
+  padding: 6px 10px;
+  background: var(--cinza-1);
+  border-radius: 6px;
+}
+.autosave-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--cinza-3);
+}
+.autosave-dot.pending { background: var(--ouro); animation: pulse 1.2s ease-in-out infinite; }
+.autosave-dot.ok { background: var(--verde-vivo); }
+.autosave-dot.err { background: var(--vermelho); }
+@keyframes pulse { 50% { opacity: .4; } }
+
+.editor-status-select {
+  padding: 6px 28px 6px 10px;
+  border: 1.5px solid var(--cinza-2);
+  border-radius: 6px;
+  font-size: 11.5px;
+  font-weight: 600;
+  background: white url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%234a5260' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") no-repeat right 8px center;
+  cursor: pointer;
+  appearance: none;
+  letter-spacing: .3px;
+  text-transform: uppercase;
+}
+
+/* Layout 2 colunas (sidebar de navegação + conteúdo) */
+.editor-body {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  overflow: hidden;
+}
+
+/* Sidebar de navegação por passos */
+.editor-sidebar {
+  background: white;
+  border-right: 1px solid var(--cinza-2);
+  padding: 18px 0;
+  overflow-y: auto;
+}
+.step-progress {
+  padding: 0 18px 18px;
+  border-bottom: 1px solid var(--cinza-2);
+  margin-bottom: 14px;
+}
+.step-progress-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--cinza-4);
+  margin-bottom: 6px;
+  font-weight: 600;
+  letter-spacing: .3px;
+}
+.step-progress-track {
+  height: 4px;
+  background: var(--cinza-2);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.step-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--azul) 0%, var(--verde) 100%);
+  border-radius: 2px;
+  transition: width .3s ease;
+  width: 0;
+}
+
+.step-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 18px;
+  cursor: pointer;
+  transition: var(--tr);
+  border-left: 3px solid transparent;
+  position: relative;
+}
+.step-item:hover { background: var(--cinza-1); }
+.step-item.active {
+  background: var(--verde-soft);
+  border-left-color: var(--verde);
+}
+.step-item.active .step-num {
+  background: var(--verde);
+  color: white;
+}
+.step-item.completed .step-num {
+  background: var(--verde-vivo);
+  color: white;
+}
+.step-item.completed .step-num::after {
+  content: '✓';
+}
+.step-item.completed .step-num span {
+  display: none;
+}
+.step-num {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--cinza-2);
+  color: var(--cinza-5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  flex-shrink: 0;
+  transition: var(--tr);
+}
+.step-info { line-height: 1.2; }
+.step-label {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--preto);
+}
+.step-sub {
+  font-size: 10.5px;
+  color: var(--cinza-4);
+  margin-top: 2px;
+}
+
+/* Conteúdo principal do passo */
+.editor-content {
+  overflow-y: auto;
+  padding: 32px 40px;
+}
+.step-panel {
+  display: none;
+  max-width: 760px;
+  margin: 0 auto;
+  animation: fadeIn .25s ease;
+}
+.step-panel.active { display: block; }
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.step-panel-header {
+  margin-bottom: 26px;
+}
+.step-panel-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--azul);
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.step-panel-subtitle {
+  font-size: 13.5px;
+  color: var(--cinza-5);
+  line-height: 1.6;
+}
+
+/* ═══════════════════════════════════════════════
+   FORMULÁRIO — Inputs, labels, grupos
+═══════════════════════════════════════════════ */
+.form-section {
+  background: white;
+  border-radius: var(--r);
+  padding: 22px 24px;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow-sm);
+}
+.form-section-title {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--cinza-4);
+  margin-bottom: 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--cinza-2);
+}
+
+.form-grid {
+  display: grid;
+  gap: 14px;
+}
+.form-grid.cols-2 { grid-template-columns: 1fr 1fr; }
+.form-grid.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+.form-grid.cols-2-1 { grid-template-columns: 2fr 1fr; }
+.form-grid.cols-1-2 { grid-template-columns: 1fr 2fr; }
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.field-label {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--cinza-5);
+  letter-spacing: .2px;
+}
+.field-label .required { color: var(--vermelho); }
+.field-label .opt {
+  color: var(--cinza-4);
+  font-weight: 400;
+  font-size: 10.5px;
+  letter-spacing: 0;
+}
+.field-input,
+.field-select,
+.field-textarea {
+  padding: 10px 12px;
+  border: 1.5px solid var(--cinza-2);
+  border-radius: var(--r-sm);
+  font-size: 13.5px;
+  background: white;
+  transition: var(--tr);
+  width: 100%;
+  font-family: 'Outfit', sans-serif;
+  color: var(--preto);
+}
+.field-input:focus,
+.field-select:focus,
+.field-textarea:focus {
+  outline: none;
+  border-color: var(--verde);
+  box-shadow: 0 0 0 3px rgba(26,107,42,.1);
+}
+.field-textarea {
+  resize: vertical;
+  min-height: 90px;
+  line-height: 1.5;
+}
+.field-help {
+  font-size: 11px;
+  color: var(--cinza-4);
+  margin-top: 3px;
+  line-height: 1.4;
+}
+
+/* Radio cards (escolha visual de tipo) */
+.radio-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-bottom: 8px;
+}
+.radio-card {
+  background: white;
+  border: 2px solid var(--cinza-2);
+  border-radius: var(--r);
+  padding: 22px 18px;
+  text-align: center;
+  cursor: pointer;
+  transition: var(--tr);
+  position: relative;
+}
+.radio-card:hover {
+  border-color: var(--cinza-3);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
+}
+.radio-card.selected {
+  border-color: var(--verde);
+  background: var(--verde-soft);
+}
+.radio-card.selected::after {
+  content: '✓';
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--verde);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+}
+.radio-card-icon {
+  font-size: 36px;
+  margin-bottom: 8px;
+}
+.radio-card-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--azul);
+  margin-bottom: 4px;
+}
+.radio-card-desc {
+  font-size: 11px;
+  color: var(--cinza-4);
+  line-height: 1.4;
+}
+
+/* Radio inline (escolha simples horizontal) */
+.radio-inline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.radio-pill {
+  padding: 7px 14px;
+  border: 1.5px solid var(--cinza-2);
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--cinza-5);
+  cursor: pointer;
+  background: white;
+  transition: var(--tr);
+}
+.radio-pill:hover { border-color: var(--cinza-3); }
+.radio-pill.selected {
+  background: var(--azul);
+  color: white;
+  border-color: var(--azul);
+}
+
+/* ═══════════════════════════════════════════════
+   TABELA DE ITENS (Solução)
+═══════════════════════════════════════════════ */
+.itens-toolbar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+.btn-add-item {
+  background: var(--verde);
+  color: white;
+  padding: 8px 14px;
+  border-radius: var(--r-sm);
+  font-size: 12px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+  transition: var(--tr);
+}
+.btn-add-item:hover { background: #145520; }
+
+.btn-catalogo {
+  background: white;
+  color: var(--azul);
+  border: 1.5px dashed var(--cinza-3);
+  padding: 8px 14px;
+  border-radius: var(--r-sm);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--tr);
+}
+.btn-catalogo:hover {
+  background: var(--azul-soft);
+  border-color: var(--azul);
+  border-style: solid;
+}
+
+.itens-table {
+  background: white;
+  border-radius: var(--r);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  margin-bottom: 14px;
+}
+.itens-table-header {
+  background: var(--cinza-1);
+  display: grid;
+  grid-template-columns: 36px 2fr 1fr 70px 110px 110px 36px;
+  padding: 10px 14px;
+  font-size: 10.5px;
+  font-weight: 700;
+  color: var(--cinza-5);
+  letter-spacing: .8px;
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--cinza-2);
+}
+.itens-table-body { }
+.item-row {
+  display: grid;
+  grid-template-columns: 36px 2fr 1fr 70px 110px 110px 36px;
+  padding: 12px 14px;
+  align-items: flex-start;
+  border-bottom: 1px solid var(--cinza-2);
+  gap: 8px;
+}
+.item-row:last-child { border-bottom: none; }
+.item-row > .item-num { padding-top: 10px; }
+.item-row > .item-input.numeric { margin-top: 0; }
+.item-row > .item-total-display { padding-top: 10px; }
+.item-row > .item-remove-btn { margin-top: 4px; }
+.item-row:hover { background: var(--cinza-1); }
+.item-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--cinza-4);
+  font-weight: 600;
+}
+.item-input {
+  border: none;
+  background: transparent;
+  padding: 6px 8px;
+  font-size: 13px;
+  width: 100%;
+  border-radius: 4px;
+  font-family: 'Outfit', sans-serif;
+  color: var(--preto);
+}
+.item-input:focus {
+  outline: 1.5px solid var(--verde);
+  background: white;
+}
+.item-input.numeric {
+  font-family: 'JetBrains Mono', monospace;
+  text-align: right;
+  font-size: 12.5px;
+}
+
+/* Textarea de descrição expansível */
+textarea.item-input {
+  resize: none;
+  overflow: hidden;
+  min-height: 36px;
+  line-height: 1.5;
+  font-family: 'Outfit', sans-serif;
+  font-size: 13px;
+  display: block;
+  word-wrap: break-word;
+  white-space: pre-wrap;
+}
+textarea.item-input:focus {
+  background: white;
+  min-height: 60px;
+}
+.item-total-display {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--azul);
+  text-align: right;
+  padding: 0 8px;
+}
+.item-remove-btn {
+  background: transparent;
+  color: var(--cinza-4);
+  font-size: 16px;
+  cursor: pointer;
+  border-radius: 4px;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--tr);
+}
+.item-remove-btn:hover { background: var(--vermelho-soft); color: var(--vermelho); }
+
+.itens-empty {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--cinza-4);
+}
+.itens-empty-icon { font-size: 32px; opacity: .3; margin-bottom: 8px; }
+.itens-empty-text { font-size: 12.5px; }
+
+/* Resumo de valores */
+.valores-resumo {
+  background: linear-gradient(135deg, var(--azul-soft) 0%, var(--verde-soft) 100%);
+  border-radius: var(--r);
+  padding: 22px 26px;
+  margin-top: 16px;
+  border: 1px solid var(--cinza-2);
+}
+.valores-linha {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 7px 0;
+  font-size: 13px;
+}
+.valores-linha-label {
+  color: var(--cinza-5);
+  font-weight: 500;
+}
+.valores-linha-valor {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 600;
+  color: var(--azul);
+  font-size: 13.5px;
+}
+.valores-linha-input {
+  width: 80px;
+  text-align: right;
+  padding: 4px 8px;
+  border: 1.5px solid var(--cinza-2);
+  border-radius: 4px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12.5px;
+  background: white;
+}
+.valores-linha-input:focus {
+  outline: none;
+  border-color: var(--verde);
+}
+.valores-divider {
+  height: 1px;
+  background: var(--cinza-2);
+  margin: 8px 0;
+}
+.valores-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0 0;
+  border-top: 2px solid var(--cinza-2);
+  margin-top: 8px;
+}
+.valores-total-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--azul);
+  letter-spacing: .3px;
+  text-transform: uppercase;
+}
+.valores-total-valor {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 800;
+  font-size: 22px;
+  color: var(--verde);
+  letter-spacing: -.5px;
+}
+
+/* Bloco específico de locação mensal (prazo) */
+.prazo-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 10px;
+  margin: 14px 0 8px;
+}
+.prazo-card {
+  border: 2px solid var(--cinza-2);
+  border-radius: var(--r-sm);
+  padding: 14px 8px;
+  text-align: center;
+  cursor: pointer;
+  transition: var(--tr);
+  background: white;
+}
+.prazo-card:hover { border-color: var(--cinza-3); }
+.prazo-card.selected {
+  background: var(--azul);
+  color: white;
+  border-color: var(--azul);
+}
+.prazo-card-num {
+  font-size: 22px;
+  font-weight: 800;
+  font-family: 'JetBrains Mono', monospace;
+}
+.prazo-card-label {
+  font-size: 10.5px;
+  letter-spacing: .5px;
+  text-transform: uppercase;
+  margin-top: 2px;
+}
+
+/* ═══════════════════════════════════════════════
+   EDITOR — Footer com navegação
+═══════════════════════════════════════════════ */
+.editor-footer {
+  background: white;
+  border-top: 1px solid var(--cinza-2);
+  padding: 14px 28px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0;
+}
+.btn-step {
+  padding: 10px 22px;
+  border-radius: var(--r-sm);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--tr);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.btn-step.prev {
+  background: var(--cinza-1);
+  color: var(--cinza-5);
+  border: 1.5px solid var(--cinza-2);
+}
+.btn-step.prev:hover { background: var(--cinza-2); }
+.btn-step.prev:disabled { opacity: .4; cursor: not-allowed; }
+.btn-step.next {
+  background: var(--verde);
+  color: white;
+  border: 1.5px solid var(--verde);
+  box-shadow: 0 2px 4px rgba(26,107,42,.2);
+}
+.btn-step.next:hover {
+  background: #145520;
+  box-shadow: 0 4px 8px rgba(26,107,42,.3);
+}
+.btn-step.finish {
+  background: var(--azul);
+  color: white;
+  border: 1.5px solid var(--azul);
+}
+.btn-step.finish:hover { background: var(--azul-med); }
+
+/* Responsivo do editor */
+@media (max-width: 900px) {
+  .editor-body { grid-template-columns: 1fr; }
+  .editor-sidebar { display: none; }
+  .editor-content { padding: 20px 16px; }
+  .form-grid.cols-2,
+  .form-grid.cols-3,
+  .form-grid.cols-2-1,
+  .form-grid.cols-1-2 { grid-template-columns: 1fr; }
+  .radio-cards { grid-template-columns: 1fr; }
+  .prazo-grid { grid-template-columns: repeat(3, 1fr); }
+  .itens-table-header,
+  .item-row { grid-template-columns: 1fr; gap: 4px; }
+  .itens-table-header { display: none; }
+  .item-row { padding: 12px; border-bottom: 8px solid var(--cinza-1); }
+}
+
+/* ═══════════════════════════════════════════════
+   TOAST DE NOTIFICAÇÃO
+═══════════════════════════════════════════════ */
+.toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: var(--azul);
+  color: white;
+  padding: 12px 20px;
+  border-radius: var(--r-sm);
+  font-size: 13px;
+  font-weight: 500;
+  box-shadow: var(--shadow-lg);
+  opacity: 0;
+  transform: translateY(20px);
+  transition: var(--tr);
+  z-index: 9999;
+  pointer-events: none;
+  max-width: 360px;
+}
+.toast.show {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+.toast.ok { background: var(--verde); }
+.toast.err { background: var(--vermelho); }
+
+/* ═══════════════════════════════════════════════
+   RESPONSIVO
+═══════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  .topbar { padding: 0 14px; height: auto; min-height: 60px; flex-wrap: wrap; gap: 8px; }
+  .topbar-info { display: none; }
+  .topbar-divider { display: none; }
+  .user-info { display: none; }
+  .main { padding: 16px; }
+  .page-header { flex-direction: column; align-items: flex-start; }
+  .stats-grid { grid-template-columns: repeat(2, 1fr); }
+  .proposta-card { grid-template-columns: 1fr; gap: 8px; }
+  .proposta-tipo-icon { display: none; }
+  .proposta-acoes { opacity: 1; }
+  .proposta-valor { text-align: left; }
+}
+
+@media (max-width: 480px) {
+  .stats-grid { grid-template-columns: 1fr; }
+}
+
+</style>
+</head>
+<body>
+
+<!-- ═════════════════ AUTH GATE / BOOT ═════════════════ -->
+<div class="boot-screen" id="bootScreen">
+  <div class="boot-logo-wrap">
+    <img src="../assets/newpc-logo.png" alt="NEWPC" class="boot-logo-img"
+         onerror="this.style.display='none';this.nextElementSibling.style.display='inline-block';">
+    <span class="boot-logo-fallback">NEWPC</span>
+  </div>
+  <div class="boot-spinner" id="bootSpinner"></div>
+  <div class="boot-text" id="bootText">Verificando acesso autorizado...</div>
+  <div class="boot-error" id="bootError"></div>
+  <a href="https://restrito.portaldoeducador.com.br" class="boot-link" id="bootLink">← Voltar ao Hub Interno</a>
+</div>
+
+<!-- ═════════════════ APP ═════════════════ -->
+<div class="app" id="app">
+
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <div class="topbar-brand">
+      <a href="https://restrito.portaldoeducador.com.br" class="btn-voltar-hub" title="Voltar ao Hub Interno NEWPC">
+        ← Hub
+      </a>
+      <img src="../assets/newpc-logo.png" alt="NEWPC" class="topbar-logo"
+           onerror="this.style.display='none';this.nextElementSibling.style.display='inline-block';">
+      <span class="topbar-logo-fallback">NEWPC</span>
+      <div class="topbar-divider"></div>
+      <div class="topbar-info">
+        <div class="topbar-title">Propostas Comerciais</div>
+        <div class="topbar-sub">Sistema de gestão de propostas NEWPC</div>
+      </div>
+    </div>
+    <div class="topbar-user">
+      <div class="user-info">
+        <div class="user-name" id="userName">—</div>
+        <div class="user-role" id="userRole">—</div>
+      </div>
+      <div class="user-avatar" id="userAvatar">?</div>
+    </div>
+  </header>
+
+  <!-- MAIN -->
+  <main class="main">
+    <div class="page-header">
+      <div class="page-title">
+        <span class="page-title-icon">📋</span>
+        Propostas Comerciais
+      </div>
+      <button class="btn-primary" onclick="abrirNovaProposta()">
+        + Nova Proposta
+      </button>
+    </div>
+
+    <!-- ESTATÍSTICAS -->
+    <div class="stats-grid">
+      <div class="stat-card total">
+        <div class="stat-label">Total de Propostas</div>
+        <div class="stat-value" id="statTotal">0</div>
+        <div class="stat-sub">cadastradas</div>
+      </div>
+      <div class="stat-card enviada">
+        <div class="stat-label">Enviadas</div>
+        <div class="stat-value" id="statEnviadas">0</div>
+        <div class="stat-sub">aguardando resposta</div>
+      </div>
+      <div class="stat-card aprovada">
+        <div class="stat-label">Aprovadas</div>
+        <div class="stat-value" id="statAprovadas">0</div>
+        <div class="stat-sub">contratos fechados</div>
+      </div>
+      <div class="stat-card valor">
+        <div class="stat-label">Valor em Propostas</div>
+        <div class="stat-value" id="statValor">R$ 0</div>
+        <div class="stat-sub">aprovadas + enviadas</div>
+      </div>
+    </div>
+
+    <!-- FILTROS -->
+    <div class="filters-bar">
+      <input type="text" class="search-input" id="searchInput"
+             placeholder="Buscar por cliente, número ou autor..." oninput="renderPropostas()">
+      <select class="filter-select" id="filtroStatus" onchange="renderPropostas()">
+        <option value="todos">Todos os status</option>
+        <option value="rascunho">Rascunho</option>
+        <option value="enviada">Enviada</option>
+        <option value="aprovada">Aprovada</option>
+        <option value="recusada">Recusada</option>
+      </select>
+      <select class="filter-select" id="filtroTipo" onchange="renderPropostas()">
+        <option value="todos">Todos os tipos</option>
+        <option value="venda">💰 Venda</option>
+        <option value="locacao_mensal">📅 Locação Mensal</option>
+        <option value="diaria">📆 Diária</option>
+      </select>
+      <select class="filter-select" id="filtroAutor" onchange="renderPropostas()">
+        <option value="todos">Todos os autores</option>
+      </select>
+      <button class="btn-limpar-filtros" onclick="limparFiltros()">Limpar filtros</button>
+    </div>
+
+    <!-- LISTA DE PROPOSTAS -->
+    <div id="propostasContainer">
+      <div class="loading-state">
+        <div class="loading-spinner"></div>
+        Carregando propostas...
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- ═════════════════ EDITOR DE PROPOSTAS ═════════════════ -->
+<div class="editor-overlay" id="editorOverlay">
+  <!-- Topbar do editor -->
+  <header class="editor-topbar">
+    <div class="editor-topbar-left">
+      <button class="editor-back-btn" onclick="fecharEditor()" title="Voltar">←</button>
+      <div class="editor-title">
+        <div class="editor-title-main" id="editorTitleMain">Nova Proposta</div>
+        <div class="editor-title-sub" id="editorTitleSub">— novo —</div>
+      </div>
+    </div>
+    <div class="editor-topbar-right">
+      <div class="autosave-indicator">
+        <div class="autosave-dot" id="autosaveDot"></div>
+        <span id="autosaveLabel">não salvo</span>
+      </div>
+      <select class="editor-status-select" id="editorStatus" onchange="alterarStatus(this.value)">
+        <option value="rascunho">Rascunho</option>
+        <option value="enviada">Enviada</option>
+        <option value="aprovada">Aprovada</option>
+        <option value="recusada">Recusada</option>
+      </select>
+    </div>
+  </header>
+
+  <!-- Body com sidebar + conteúdo -->
+  <div class="editor-body">
+    <!-- Sidebar com passos -->
+    <aside class="editor-sidebar">
+      <div class="step-progress">
+        <div class="step-progress-label">
+          <span>Preenchimento</span>
+          <span id="progressPct">0%</span>
+        </div>
+        <div class="step-progress-track">
+          <div class="step-progress-fill" id="progressFill"></div>
+        </div>
+      </div>
+
+      <div class="step-item active" data-step="0" onclick="irParaStep(0)">
+        <div class="step-num"><span>0</span></div>
+        <div class="step-info">
+          <div class="step-label">Tipo Comercial</div>
+          <div class="step-sub">Venda, locação ou diária</div>
+        </div>
+      </div>
+      <div class="step-item" data-step="1" onclick="irParaStep(1)">
+        <div class="step-num"><span>1</span></div>
+        <div class="step-info">
+          <div class="step-label">Cliente</div>
+          <div class="step-sub">Dados e responsável</div>
+        </div>
+      </div>
+      <div class="step-item" data-step="2" onclick="irParaStep(2)">
+        <div class="step-num"><span>2</span></div>
+        <div class="step-info">
+          <div class="step-label">Modelo</div>
+          <div class="step-sub">Prefeitura, escola, empresa</div>
+        </div>
+      </div>
+      <div class="step-item" data-step="3" onclick="irParaStep(3)">
+        <div class="step-num"><span>3</span></div>
+        <div class="step-info">
+          <div class="step-label">Diagnóstico</div>
+          <div class="step-sub">Necessidade do cliente</div>
+        </div>
+      </div>
+      <div class="step-item" data-step="4" onclick="irParaStep(4)">
+        <div class="step-num"><span>4</span></div>
+        <div class="step-info">
+          <div class="step-label">Solução</div>
+          <div class="step-sub">Itens e valores</div>
+        </div>
+      </div>
+      <div class="step-item" data-step="5" onclick="irParaStep(5)">
+        <div class="step-num"><span>5</span></div>
+        <div class="step-info">
+          <div class="step-label">Resumo</div>
+          <div class="step-sub">Total e desconto</div>
+        </div>
+      </div>
+      <div class="step-item" data-step="6" onclick="irParaStep(6)">
+        <div class="step-num"><span>6</span></div>
+        <div class="step-info">
+          <div class="step-label">Condições</div>
+          <div class="step-sub">Pagamento, garantia</div>
+        </div>
+      </div>
+      <div class="step-item" data-step="7" onclick="irParaStep(7)">
+        <div class="step-num"><span>7</span></div>
+        <div class="step-info">
+          <div class="step-label">Encerramento</div>
+          <div class="step-sub">Diferenciais NEWPC</div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Conteúdo principal -->
+    <main class="editor-content" id="editorContent">
+
+      <!-- ─── STEP 0: Tipo Comercial ─── -->
+      <div class="step-panel active" data-step="0">
+        <div class="step-panel-header">
+          <div class="step-panel-title">⓪ Tipo de Proposta Comercial</div>
+          <div class="step-panel-subtitle">
+            Escolha o modelo de comercialização. Esta escolha define toda a estrutura da proposta e <strong>não pode ser alterada depois</strong>.
+          </div>
+        </div>
+
+        <div class="radio-cards">
+          <div class="radio-card" data-tipo="venda" onclick="selecionarTipoComercial('venda')">
+            <div class="radio-card-icon">💰</div>
+            <div class="radio-card-title">VENDA</div>
+            <div class="radio-card-desc">Cliente adquire o produto/serviço de forma definitiva</div>
+          </div>
+          <div class="radio-card selected" data-tipo="locacao_mensal" onclick="selecionarTipoComercial('locacao_mensal')">
+            <div class="radio-card-icon">📅</div>
+            <div class="radio-card-title">LOCAÇÃO MENSAL</div>
+            <div class="radio-card-desc">Mensalidades por prazo de 6 a 60 meses</div>
+          </div>
+          <div class="radio-card" data-tipo="diaria" onclick="selecionarTipoComercial('diaria')">
+            <div class="radio-card-icon">📆</div>
+            <div class="radio-card-title">DIÁRIA</div>
+            <div class="radio-card-desc">Locação por período curto (eventos, treinamentos)</div>
+          </div>
+        </div>
+
+        <div class="field-help" style="margin-top: 16px; padding: 12px; background: var(--ouro-soft); border-radius: 6px; color: var(--cinza-5);">
+          ℹ️ <strong>Para a Entrega 1, apenas LOCAÇÃO MENSAL está implementada.</strong>
+          Os outros tipos serão liberados na Entrega 2.
+        </div>
+      </div>
+
+      <!-- ─── STEP 1: Cliente ─── -->
+      <div class="step-panel" data-step="1">
+        <div class="step-panel-header">
+          <div class="step-panel-title">① Identificação do Cliente</div>
+          <div class="step-panel-subtitle">
+            Dados completos do contratante e do responsável pela negociação.
+          </div>
+        </div>
+
+        <div class="form-section">
+          <div class="form-section-title">Dados do Cliente</div>
+          <div class="form-grid">
+            <div class="field">
+              <label class="field-label">Razão Social <span class="required">*</span></label>
+              <input type="text" class="field-input" id="cli-razaoSocial" oninput="autoSave()"
+                     placeholder="Ex: Prefeitura Municipal de Amambai">
+            </div>
+            <div class="form-grid cols-2">
+              <div class="field">
+                <label class="field-label">CNPJ <span class="required">*</span></label>
+                <input type="text" class="field-input" id="cli-cnpj" oninput="autoSave()"
+                       placeholder="00.000.000/0000-00">
+              </div>
+              <div class="field">
+                <label class="field-label">Inscrição Estadual <span class="opt">(opcional)</span></label>
+                <input type="text" class="field-input" id="cli-ie" oninput="autoSave()" placeholder="—">
+              </div>
+            </div>
+            <div class="field">
+              <label class="field-label">Endereço Completo</label>
+              <input type="text" class="field-input" id="cli-endereco" oninput="autoSave()"
+                     placeholder="Rua, número, bairro">
+            </div>
+            <div class="form-grid cols-2-1">
+              <div class="field">
+                <label class="field-label">Cidade</label>
+                <input type="text" class="field-input" id="cli-cidade" oninput="autoSave()" placeholder="Campo Grande">
+              </div>
+              <div class="field">
+                <label class="field-label">UF</label>
+                <input type="text" class="field-input" id="cli-uf" oninput="autoSave()" maxlength="2" placeholder="MS">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <div class="form-section-title">Responsável pela Negociação</div>
+          <div class="form-grid">
+            <div class="form-grid cols-2">
+              <div class="field">
+                <label class="field-label">Nome Completo <span class="required">*</span></label>
+                <input type="text" class="field-input" id="resp-nome" oninput="autoSave()"
+                       placeholder="Ex: Maria Silva">
+              </div>
+              <div class="field">
+                <label class="field-label">Cargo / Função</label>
+                <input type="text" class="field-input" id="resp-cargo" oninput="autoSave()"
+                       placeholder="Ex: Secretária de Educação">
+              </div>
+            </div>
+            <div class="form-grid cols-2">
+              <div class="field">
+                <label class="field-label">E-mail</label>
+                <input type="email" class="field-input" id="resp-email" oninput="autoSave()"
+                       placeholder="email@dominio.gov.br">
+              </div>
+              <div class="field">
+                <label class="field-label">Telefone</label>
+                <input type="tel" class="field-input" id="resp-telefone" oninput="autoSave()"
+                       placeholder="(67) 99999-9999">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <div class="form-section-title">Modalidade da Contratação</div>
+          <div class="radio-inline" id="modalidadeContainer">
+            <button type="button" class="radio-pill selected" data-modalidade="pregao" onclick="selecionarModalidade('pregao')">📜 Pregão Eletrônico</button>
+            <button type="button" class="radio-pill" data-modalidade="dispensa" onclick="selecionarModalidade('dispensa')">📋 Dispensa de Licitação</button>
+            <button type="button" class="radio-pill" data-modalidade="direta" onclick="selecionarModalidade('direta')">📝 Compra Direta</button>
+            <button type="button" class="radio-pill" data-modalidade="privada" onclick="selecionarModalidade('privada')">🏢 Contratação Privada</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ─── STEP 2: Modelo ─── -->
+      <div class="step-panel" data-step="2">
+        <div class="step-panel-header">
+          <div class="step-panel-title">② Tipo de Cliente</div>
+          <div class="step-panel-subtitle">
+            Selecione o perfil do cliente. Isso adapta a linguagem e os textos institucionais da proposta.
+          </div>
+        </div>
+
+        <div class="radio-cards">
+          <div class="radio-card selected" data-modelo="prefeitura" onclick="selecionarModelo('prefeitura')">
+            <div class="radio-card-icon">🏛️</div>
+            <div class="radio-card-title">PREFEITURA</div>
+            <div class="radio-card-desc">Órgão público municipal ou estadual</div>
+          </div>
+          <div class="radio-card" data-modelo="escola" onclick="selecionarModelo('escola')">
+            <div class="radio-card-icon">🏫</div>
+            <div class="radio-card-title">ESCOLA</div>
+            <div class="radio-card-desc">Instituição de ensino particular</div>
+          </div>
+          <div class="radio-card" data-modelo="empresa" onclick="selecionarModelo('empresa')">
+            <div class="radio-card-icon">🏢</div>
+            <div class="radio-card-title">EMPRESA</div>
+            <div class="radio-card-desc">Empresa privada de outro setor</div>
+          </div>
+        </div>
+
+        <div class="field-help" style="margin-top: 16px; padding: 12px; background: var(--azul-soft); border-radius: 6px; color: var(--cinza-5);">
+          📝 Os textos institucionais específicos de cada perfil serão aplicados na <strong>Entrega 4</strong> (PDF profissional).
+        </div>
+      </div>
+
+      <!-- ─── STEP 3: Diagnóstico ─── -->
+      <div class="step-panel" data-step="3">
+        <div class="step-panel-header">
+          <div class="step-panel-title">③ Diagnóstico / Necessidade</div>
+          <div class="step-panel-subtitle">
+            Descreva o contexto e a demanda do cliente. Este texto vai aparecer na proposta.
+          </div>
+        </div>
+
+        <div class="form-section">
+          <div class="form-grid">
+            <div class="field">
+              <label class="field-label">Contexto Atual <span class="opt">(situação que o cliente vive hoje)</span></label>
+              <textarea class="field-textarea" id="diag-contexto" oninput="autoSave()" rows="4"
+                        placeholder="Ex: A rede municipal de ensino conta com 12 escolas, atendendo 4.500 alunos. As salas atualmente não dispõem de equipamentos modernos para integração de tecnologia ao processo pedagógico..."></textarea>
+            </div>
+            <div class="field">
+              <label class="field-label">Necessidade Identificada <span class="opt">(o que precisa ser resolvido)</span></label>
+              <textarea class="field-textarea" id="diag-necessidade" oninput="autoSave()" rows="4"
+                        placeholder="Ex: Modernização das salas de aula com lousas digitais e Chromebooks para todos os alunos do ensino fundamental II..."></textarea>
+            </div>
+            <div class="field">
+              <label class="field-label">Por que esta solução? <span class="opt">(justificativa técnica)</span></label>
+              <textarea class="field-textarea" id="diag-justificativa" oninput="autoSave()" rows="3"
+                        placeholder="Ex: A solução proposta atende à BNCC, possui suporte da Secretaria de Educação e oferece custo-benefício compatível..."></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ─── STEP 4: Solução (Itens) ─── -->
+      <div class="step-panel" data-step="4">
+        <div class="step-panel-header">
+          <div class="step-panel-title">④ Solução Proposta</div>
+          <div class="step-panel-subtitle">
+            Liste os itens que compõem a proposta. Os valores são <strong>mensais por unidade</strong> (locação mensal).
+          </div>
+        </div>
+
+        <div class="form-section">
+          <div class="field">
+            <label class="field-label">Texto Introdutório da Solução <span class="opt">(opcional)</span></label>
+            <textarea class="field-textarea" id="sol-intro" oninput="autoSave()" rows="2"
+                      placeholder="Ex: Apresentamos a seguir a solução completa para modernização das salas de aula..."></textarea>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <div class="form-section-title">Itens da Proposta (Locação Mensal)</div>
+
+          <div class="itens-toolbar">
+            <button class="btn-add-item" onclick="adicionarItem()">+ Adicionar item</button>
+            <button class="btn-catalogo" onclick="alert('Catálogo virá na Entrega 3')" disabled style="opacity:.5;cursor:not-allowed;">📚 Catálogo NEWPC (Entrega 3)</button>
+          </div>
+
+          <div class="itens-table" id="itensTableContainer">
+            <div class="itens-table-header">
+              <div>#</div>
+              <div>Item / Descrição</div>
+              <div>Marca</div>
+              <div>Qtd</div>
+              <div>Vlr Mensal Unit.</div>
+              <div>Total Mensal</div>
+              <div></div>
+            </div>
+            <div class="itens-table-body" id="itensTableBody">
+              <!-- Itens são renderizados dinamicamente -->
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ─── STEP 5: Resumo (Valores) ─── -->
+      <div class="step-panel" data-step="5">
+        <div class="step-panel-header">
+          <div class="step-panel-title">⑤ Resumo Financeiro</div>
+          <div class="step-panel-subtitle">
+            Defina o prazo do contrato, o desconto comercial (manual) e veja o valor total final da proposta.
+          </div>
+        </div>
+
+        <div class="form-section">
+          <div class="form-section-title">Prazo Contratual</div>
+          <div class="prazo-grid" id="prazoGrid">
+            <div class="prazo-card" data-prazo="6" onclick="selecionarPrazo(6)">
+              <div class="prazo-card-num">6</div>
+              <div class="prazo-card-label">meses</div>
+            </div>
+            <div class="prazo-card" data-prazo="12" onclick="selecionarPrazo(12)">
+              <div class="prazo-card-num">12</div>
+              <div class="prazo-card-label">meses</div>
+            </div>
+            <div class="prazo-card" data-prazo="24" onclick="selecionarPrazo(24)">
+              <div class="prazo-card-num">24</div>
+              <div class="prazo-card-label">meses</div>
+            </div>
+            <div class="prazo-card selected" data-prazo="36" onclick="selecionarPrazo(36)">
+              <div class="prazo-card-num">36</div>
+              <div class="prazo-card-label">meses</div>
+            </div>
+            <div class="prazo-card" data-prazo="48" onclick="selecionarPrazo(48)">
+              <div class="prazo-card-num">48</div>
+              <div class="prazo-card-label">meses</div>
+            </div>
+            <div class="prazo-card" data-prazo="60" onclick="selecionarPrazo(60)">
+              <div class="prazo-card-num">60</div>
+              <div class="prazo-card-label">meses</div>
+            </div>
+          </div>
+          <div class="field-help">Prazo padrão da NEWPC: <strong>36 meses</strong>. Alterações de prazo impactam diretamente o valor final do contrato.</div>
+        </div>
+
+        <div class="form-section">
+          <div class="form-section-title">Desconto Comercial</div>
+          <div class="valores-resumo">
+            <div class="valores-linha">
+              <span class="valores-linha-label">Total Mensal Bruto</span>
+              <span class="valores-linha-valor" id="resTotalMensalBruto">R$ 0,00</span>
+            </div>
+            <div class="valores-linha">
+              <span class="valores-linha-label">Desconto Negociado <span style="color:var(--cinza-4); font-weight:400; font-size:11px;">(manual)</span></span>
+              <span style="display:flex; align-items:center; gap:6px;">
+                <input type="number" class="valores-linha-input" id="descontoMensalValor" min="0" step="0.01"
+                       value="0" oninput="recalcularResumo();autoSave()">
+                <span style="font-size:11px; color:var(--cinza-4);">R$/mês</span>
+              </span>
+            </div>
+            <div class="field" style="margin-top:8px;">
+              <label class="field-label" style="font-size:10.5px;">Justificativa do desconto <span class="opt">(opcional)</span></label>
+              <input type="text" class="field-input" id="descontoJustificativa" oninput="autoSave()"
+                     placeholder="Ex: Cliente fidelidade, parceria estratégica, volume contratado">
+            </div>
+
+            <div class="valores-divider"></div>
+
+            <div class="valores-linha">
+              <span class="valores-linha-label">Total Mensal Final</span>
+              <span class="valores-linha-valor" id="resTotalMensalFinal">R$ 0,00</span>
+            </div>
+            <div class="valores-linha">
+              <span class="valores-linha-label">Prazo do Contrato</span>
+              <span class="valores-linha-valor" id="resPrazo">36 meses</span>
+            </div>
+
+            <div class="valores-total">
+              <span class="valores-total-label">Total do Contrato</span>
+              <span class="valores-total-valor" id="resTotalContrato">R$ 0,00</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ─── STEP 6: Condições ─── -->
+      <div class="step-panel" data-step="6">
+        <div class="step-panel-header">
+          <div class="step-panel-title">⑥ Condições Comerciais</div>
+          <div class="step-panel-subtitle">
+            Defina forma de pagamento, prazo de entrega, garantia e suporte oferecidos.
+          </div>
+        </div>
+
+        <div class="form-section">
+          <div class="form-grid">
+            <div class="field">
+              <label class="field-label">Forma de Pagamento</label>
+              <input type="text" class="field-input" id="cond-pagamento" oninput="autoSave()"
+                     placeholder="Ex: Mensalidade fixa, vencimento todo dia 10, via boleto bancário">
+            </div>
+            <div class="field">
+              <label class="field-label">Prazo de Entrega / Implantação</label>
+              <input type="text" class="field-input" id="cond-entrega" oninput="autoSave()"
+                     placeholder="Ex: 60 dias úteis após assinatura do contrato">
+              <div class="field-help">Defina manualmente conforme a complexidade da implantação.</div>
+            </div>
+            <div class="form-grid cols-2">
+              <div class="field">
+                <label class="field-label">Garantia</label>
+                <input type="text" class="field-input" id="cond-garantia" oninput="autoSave()"
+                       placeholder="Ex: Garantia total durante todo o contrato">
+              </div>
+              <div class="field">
+                <label class="field-label">Suporte Técnico</label>
+                <input type="text" class="field-input" id="cond-suporte" oninput="autoSave()"
+                       placeholder="Ex: Suporte presencial e remoto, horário comercial">
+              </div>
+            </div>
+            <div class="field">
+              <label class="field-label">Validade da Proposta <span class="opt">(em dias)</span></label>
+              <input type="number" class="field-input" id="cond-validade" oninput="autoSave()"
+                     value="30" min="1" max="365" style="max-width:120px;">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ─── STEP 7: Encerramento ─── -->
+      <div class="step-panel" data-step="7">
+        <div class="step-panel-header">
+          <div class="step-panel-title">⑦ Encerramento e Diferenciais</div>
+          <div class="step-panel-subtitle">
+            Texto final reforçando os diferenciais NEWPC e convidando ao fechamento.
+          </div>
+        </div>
+
+        <div class="form-section">
+          <div class="field">
+            <label class="field-label">Diferenciais NEWPC <span class="opt">(por que escolher a gente)</span></label>
+            <textarea class="field-textarea" id="enc-diferenciais" oninput="autoSave()" rows="6"
+                      placeholder="Ex: A NEWPC Tecnologia atua há mais de 10 anos no mercado de tecnologia educacional, com presença em 6 estados, equipe técnica especializada e parcerias com as principais marcas do setor..."></textarea>
+          </div>
+          <div class="field" style="margin-top:14px;">
+            <label class="field-label">Mensagem Final / Convite ao Fechamento</label>
+            <textarea class="field-textarea" id="enc-mensagem" oninput="autoSave()" rows="3"
+                      placeholder="Ex: Estamos à disposição para esclarecimentos adicionais e aguardamos a oportunidade de iniciar esta parceria..."></textarea>
+          </div>
+        </div>
+
+        <div style="background:var(--verde-soft); border-radius: var(--r); padding:18px; margin-top:16px; text-align:center;">
+          <div style="font-size:30px; margin-bottom:6px;">🎉</div>
+          <div style="font-size:14px; font-weight:700; color:var(--verde); margin-bottom:6px;">Proposta pronta!</div>
+          <div style="font-size:12.5px; color:var(--cinza-5);">
+            Use o botão abaixo para salvar. O layout PDF profissional será gerado na <strong>Entrega 4</strong>.
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- Footer com navegação -->
+  <footer class="editor-footer">
+    <button class="btn-step prev" id="btnPrev" onclick="passoAnterior()">← Voltar</button>
+    <button class="btn-step next" id="btnNext" onclick="passoSeguinte()">Próximo →</button>
+  </footer>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- ═════════════════ FIREBASE ═════════════════ -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.1/firebase-app.js";
+  import {
+    getFirestore, collection, doc, getDocs, getDoc, setDoc, updateDoc,
+    deleteDoc, addDoc, query, orderBy, where, onSnapshot, serverTimestamp,
+    runTransaction
+  } from "https://www.gstatic.com/firebasejs/10.12.1/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyCHLrwHDUsVKKyIgHlbpkWsv1dOTBfY52M",
+    authDomain: "portal-do-educador-interno.firebaseapp.com",
+    projectId: "portal-do-educador-interno",
+    storageBucket: "portal-do-educador-interno.firebasestorage.app",
+    messagingSenderId: "133947200175",
+    appId: "1:133947200175:web:a819a5a7c1196544d97a5a",
+    measurementId: "G-TRWXV3GW2C"
+  };
+
+  const fbApp = initializeApp(firebaseConfig);
+  const db = getFirestore(fbApp);
+
+  window.fbDb = db;
+  window.fbCol = collection;
+  window.fbDoc = doc;
+  window.fbGetDocs = getDocs;
+  window.fbGetDoc = getDoc;
+  window.fbSetDoc = setDoc;
+  window.fbUpdateDoc = updateDoc;
+  window.fbDeleteDoc = deleteDoc;
+  window.fbAddDoc = addDoc;
+  window.fbQuery = query;
+  window.fbOrderBy = orderBy;
+  window.fbWhere = where;
+  window.fbOnSnapshot = onSnapshot;
+  window.fbServerTimestamp = serverTimestamp;
+  window.fbRunTransaction = runTransaction;
+
+  window.firebaseReady = true;
+  window.dispatchEvent(new Event('firebase-ready'));
+</script>
+
+<!-- ═════════════════ LÓGICA PRINCIPAL ═════════════════ -->
+<script>
+/* ═══════════════════════════════════════════════
+   ESTADO GLOBAL
+═══════════════════════════════════════════════ */
+let usuarioLogado = null;
+let propostasLista = [];
+let unsubPropostas = null;
+
+/* ═══════════════════════════════════════════════
+   AUTH GATE — verifica sessão do Hub
+═══════════════════════════════════════════════ */
+function aguardarFirebase() {
+  return new Promise(resolve => {
+    if (window.firebaseReady) return resolve();
+    window.addEventListener('firebase-ready', resolve, { once: true });
+  });
+}
+
+function verificarAutorizacao() {
+  const raw = localStorage.getItem('newpc_user');
+  if (!raw) return null;
+  try {
+    const sessao = JSON.parse(raw);
+    // Sessão válida por 30 dias
+    if (Date.now() - sessao.loginAt > 30 * 24 * 60 * 60 * 1000) {
+      localStorage.removeItem('newpc_user');
+      return null;
+    }
+    return sessao;
+  } catch { return null; }
+}
+
+async function inicializar() {
+  // 1. Verifica autorização
+  const sessao = verificarAutorizacao();
+  if (!sessao) {
+    document.getElementById('bootSpinner').style.display = 'none';
+    document.getElementById('bootText').style.display = 'none';
+    const errEl = document.getElementById('bootError');
+    errEl.innerHTML = '🔒 <strong>Acesso restrito</strong><br><br>Esta aplicação só pode ser acessada após login no Hub Interno NEWPC.';
+    errEl.classList.add('show');
+    document.getElementById('bootLink').classList.add('show');
+    return;
+  }
+
+  usuarioLogado = sessao;
+
+  // 2. Aguarda Firebase
+  document.getElementById('bootText').textContent = 'Conectando ao banco de dados NEWPC...';
+  await aguardarFirebase();
+
+  // 3. Atualiza UI com dados do usuário
+  document.getElementById('userName').textContent = sessao.nome || sessao.email;
+  document.getElementById('userRole').textContent = sessao.role || 'Equipe NEWPC';
+  document.getElementById('userAvatar').textContent = (sessao.nome || sessao.email).charAt(0).toUpperCase();
+
+  // 4. Inicia listener das propostas em tempo real
+  iniciarListenerPropostas();
+
+  // 5. Esconde boot, mostra app
+  setTimeout(() => {
+    document.getElementById('bootScreen').classList.add('hidden');
+    document.getElementById('app').classList.add('show');
+    showToast(`Bem-vindo, ${sessao.nome || sessao.email.split('@')[0]}!`, 'ok');
+  }, 400);
+}
+
+/* ═══════════════════════════════════════════════
+   FIRESTORE — Propostas Comerciais
+   Coleção: propostas_comerciais
+═══════════════════════════════════════════════ */
+function iniciarListenerPropostas() {
+  if (unsubPropostas) unsubPropostas();
+  const q = window.fbQuery(
+    window.fbCol(window.fbDb, 'propostas_comerciais'),
+    window.fbOrderBy('atualizadoEm', 'desc')
+  );
+  unsubPropostas = window.fbOnSnapshot(q, (snap) => {
+    propostasLista = [];
+    snap.forEach(docSnap => {
+      propostasLista.push({ id: docSnap.id, ...docSnap.data() });
+    });
+    atualizarEstatisticas();
+    atualizarFiltroAutores();
+    renderPropostas();
+  }, (err) => {
+    console.error('Erro ao escutar propostas:', err);
+    showToast('Erro de sincronização com a nuvem', 'err');
+  });
+}
+
+/* ═══════════════════════════════════════════════
+   ESTATÍSTICAS
+═══════════════════════════════════════════════ */
+function atualizarEstatisticas() {
+  const total = propostasLista.length;
+  const enviadas = propostasLista.filter(p => p.status === 'enviada').length;
+  const aprovadas = propostasLista.filter(p => p.status === 'aprovada').length;
+
+  // Valor: soma das aprovadas + enviadas
+  const valor = propostasLista
+    .filter(p => p.status === 'aprovada' || p.status === 'enviada')
+    .reduce((s, p) => s + (calcularValorTotalProposta(p) || 0), 0);
+
+  document.getElementById('statTotal').textContent = total;
+  document.getElementById('statEnviadas').textContent = enviadas;
+  document.getElementById('statAprovadas').textContent = aprovadas;
+  document.getElementById('statValor').textContent = formatarMoedaCompacta(valor);
+}
+
+function calcularValorTotalProposta(p) {
+  if (!p) return 0;
+  if (p.tipoComercial === 'venda') return p.total || 0;
+  if (p.tipoComercial === 'locacao_mensal') return p.totalContrato || 0;
+  if (p.tipoComercial === 'diaria') return p.totalEvento || 0;
+  return 0;
+}
+
+function formatarMoedaCompacta(valor) {
+  if (valor >= 1000000) return 'R$ ' + (valor/1000000).toFixed(1).replace('.', ',') + 'M';
+  if (valor >= 1000) return 'R$ ' + (valor/1000).toFixed(0) + 'k';
+  return formatarMoeda(valor);
+}
+
+/* ═══════════════════════════════════════════════
+   FILTRO DE AUTORES (popula dinamicamente)
+═══════════════════════════════════════════════ */
+function atualizarFiltroAutores() {
+  const select = document.getElementById('filtroAutor');
+  const valorAtual = select.value;
+  const autores = [...new Set(propostasLista.map(p => p.criadoPorNome || p.criadoPor).filter(Boolean))].sort();
+
+  select.innerHTML = '<option value="todos">Todos os autores</option>' +
+    autores.map(a => `<option value="${escHtml(a)}">${escHtml(a)}</option>`).join('');
+
+  // Restaura seleção se ainda existe
+  if (autores.includes(valorAtual)) select.value = valorAtual;
+}
+
+/* ═══════════════════════════════════════════════
+   RENDERIZAÇÃO DA LISTA
+═══════════════════════════════════════════════ */
+function renderPropostas() {
+  const container = document.getElementById('propostasContainer');
+  const busca = (document.getElementById('searchInput').value || '').toLowerCase().trim();
+  const filtroStatus = document.getElementById('filtroStatus').value;
+  const filtroTipo = document.getElementById('filtroTipo').value;
+  const filtroAutor = document.getElementById('filtroAutor').value;
+
+  let lista = [...propostasLista];
+
+  // Aplica filtros
+  if (filtroStatus !== 'todos') lista = lista.filter(p => p.status === filtroStatus);
+  if (filtroTipo !== 'todos') lista = lista.filter(p => p.tipoComercial === filtroTipo);
+  if (filtroAutor !== 'todos') lista = lista.filter(p => (p.criadoPorNome || p.criadoPor) === filtroAutor);
+  if (busca) {
+    lista = lista.filter(p => {
+      const t = [
+        p.numero,
+        p.cliente?.razaoSocial,
+        p.criadoPorNome,
+        p.criadoPor
+      ].filter(Boolean).join(' ').toLowerCase();
+      return t.includes(busca);
+    });
+  }
+
+  if (lista.length === 0) {
+    const temBusca = busca || filtroStatus !== 'todos' || filtroTipo !== 'todos' || filtroAutor !== 'todos';
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">${temBusca ? '🔍' : '📋'}</div>
+        <div class="empty-title">${temBusca ? 'Nenhuma proposta encontrada' : 'Nenhuma proposta ainda'}</div>
+        <div class="empty-text">
+          ${temBusca
+            ? 'Nenhuma proposta corresponde aos filtros aplicados. Tente ajustar a busca ou limpar os filtros.'
+            : 'Crie sua primeira proposta comercial clicando em "+ Nova Proposta" no topo da página.'}
+        </div>
+      </div>`;
+    return;
+  }
+
+  container.innerHTML = '<div class="propostas-list">' + lista.map(p => renderCardProposta(p)).join('') + '</div>';
+}
+
+function renderCardProposta(p) {
+  const tipo = p.tipoComercial || 'venda';
+  const tipoIconMap = { venda: '💰', locacao_mensal: '📅', diaria: '📆' };
+  const tipoLabelMap = { venda: 'Venda', locacao_mensal: 'Locação Mensal', diaria: 'Diária' };
+
+  const status = p.status || 'rascunho';
+  const statusLabelMap = { rascunho: 'Rascunho', enviada: 'Enviada', aprovada: 'Aprovada', recusada: 'Recusada' };
+
+  const cliente = p.cliente?.razaoSocial || 'Cliente não informado';
+  const numero = p.numero || '—';
+  const autor = p.criadoPorNome || p.criadoPor?.split('@')[0] || '—';
+  const data = formatarData(p.atualizadoEm || p.criadoEm);
+
+  const valor = calcularValorTotalProposta(p);
+  const valorSubLabel = tipo === 'locacao_mensal' ? `valor do contrato (${p.prazoMeses || '?'} meses)`
+                      : tipo === 'diaria' ? `valor do evento (${p.qtdDias || '?'} dias)`
+                      : 'valor total';
+
+  return `
+    <div class="proposta-card ${status}" onclick="abrirProposta('${p.id}')">
+      <div class="proposta-tipo-icon ${tipo}" title="${tipoLabelMap[tipo]}">${tipoIconMap[tipo]}</div>
+      <div class="proposta-info">
+        <div class="proposta-header-line">
+          <span class="proposta-numero">${escHtml(numero)}</span>
+          <span class="proposta-cliente">${escHtml(cliente)}</span>
+          <span class="status-badge ${status}">${statusLabelMap[status]}</span>
+        </div>
+        <div class="proposta-meta">
+          <span>${tipoIconMap[tipo]} ${tipoLabelMap[tipo]}</span>
+          <span class="sep">·</span>
+          <span>👤 ${escHtml(autor)}</span>
+          <span class="sep">·</span>
+          <span>📅 ${data}</span>
+        </div>
+      </div>
+      <div>
+        <div class="proposta-valor">${formatarMoeda(valor)}</div>
+        <div class="proposta-valor-sub">${valorSubLabel}</div>
+      </div>
+      <div class="proposta-acoes" onclick="event.stopPropagation()">
+        <button class="proposta-acao-btn" title="Editar" onclick="editarProposta('${p.id}')">✏️</button>
+        <button class="proposta-acao-btn" title="Duplicar" onclick="duplicarProposta('${p.id}')">📋</button>
+        <button class="proposta-acao-btn del" title="Excluir" onclick="excluirProposta('${p.id}')">🗑</button>
+      </div>
+    </div>`;
+}
+
+/* ═══════════════════════════════════════════════
+   EDITOR DE PROPOSTAS — Estado e navegação
+═══════════════════════════════════════════════ */
+let editorAberto = false;
+let editandoPropostaId = null;
+let stepAtual = 0;
+let propostaAtual = criarPropostaVazia();
+let autoSaveTimer = null;
+
+function criarPropostaVazia() {
+  return {
+    tipoComercial: 'locacao_mensal', // padrão da Entrega 1
+    tipoCliente: 'prefeitura',
+    cliente: { razaoSocial: '', cnpj: '', ie: '', endereco: '', cidade: '', uf: '' },
+    responsavel: { nome: '', cargo: '', email: '', telefone: '' },
+    modalidade: 'pregao',
+    diagnostico: { contexto: '', necessidade: '', justificativa: '' },
+    solucaoIntro: '',
+    itens: [],
+    prazoMeses: 36,
+    descontoMensalValor: 0,
+    descontoJustificativa: '',
+    totalMensalBruto: 0,
+    totalMensalFinal: 0,
+    totalContrato: 0,
+    condicoes: { pagamento: '', entrega: '', garantia: '', suporte: '' },
+    validadeDias: 30,
+    encerramento: { diferenciais: '', mensagem: '' },
+    status: 'rascunho'
+  };
+}
+
+function abrirNovaProposta() {
+  editandoPropostaId = null;
+  propostaAtual = criarPropostaVazia();
+  abrirEditor();
+}
+
+function abrirProposta(id) {
+  const p = propostasLista.find(x => x.id === id);
+  if (!p) return showToast('Proposta não encontrada', 'err');
+
+  editandoPropostaId = id;
+  propostaAtual = JSON.parse(JSON.stringify(p)); // deep clone
+  // Garantir estrutura
+  if (!propostaAtual.cliente) propostaAtual.cliente = {};
+  if (!propostaAtual.responsavel) propostaAtual.responsavel = {};
+  if (!propostaAtual.diagnostico) propostaAtual.diagnostico = {};
+  if (!propostaAtual.condicoes) propostaAtual.condicoes = {};
+  if (!propostaAtual.encerramento) propostaAtual.encerramento = {};
+  if (!Array.isArray(propostaAtual.itens)) propostaAtual.itens = [];
+
+  abrirEditor();
+}
+
+function editarProposta(id) {
+  if (event) event.stopPropagation();
+  abrirProposta(id);
+}
+
+function abrirEditor() {
+  editorAberto = true;
+  stepAtual = 0;
+  document.getElementById('editorOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+
+  carregarDadosNoEditor();
+  renderItens();
+  irParaStep(0);
+  atualizarTitulo();
+  setAutosave('—', '');
+}
+
+function fecharEditor() {
+  if (autoSaveTimer) clearTimeout(autoSaveTimer);
+  editorAberto = false;
+  document.getElementById('editorOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+  // Salva uma última vez ao fechar
+  if (editandoPropostaId || temConteudoMinimo()) {
+    salvarNaNuvem(true);
+  }
+}
+
+function temConteudoMinimo() {
+  return propostaAtual.cliente.razaoSocial?.trim() ||
+         propostaAtual.itens?.length > 0;
+}
+
+function atualizarTitulo() {
+  const main = document.getElementById('editorTitleMain');
+  const sub = document.getElementById('editorTitleSub');
+  const cliente = propostaAtual.cliente?.razaoSocial?.trim();
+  main.textContent = cliente || 'Nova Proposta';
+  sub.textContent = propostaAtual.numero || '— novo —';
+  document.getElementById('editorStatus').value = propostaAtual.status || 'rascunho';
+}
+
+/* ═══════════════════════════════════════════════
+   NAVEGAÇÃO ENTRE PASSOS
+═══════════════════════════════════════════════ */
+function irParaStep(n) {
+  if (n < 0 || n > 7) return;
+  stepAtual = n;
+
+  // Atualiza painéis
+  document.querySelectorAll('.step-panel').forEach(p => {
+    p.classList.toggle('active', parseInt(p.dataset.step) === n);
+  });
+
+  // Atualiza sidebar
+  document.querySelectorAll('.step-item').forEach(item => {
+    const s = parseInt(item.dataset.step);
+    item.classList.toggle('active', s === n);
+  });
+
+  // Atualiza botões nav
+  document.getElementById('btnPrev').disabled = (n === 0);
+  const btnNext = document.getElementById('btnNext');
+  if (n === 7) {
+    btnNext.textContent = '✓ Salvar e Concluir';
+    btnNext.className = 'btn-step finish';
+  } else {
+    btnNext.textContent = 'Próximo →';
+    btnNext.className = 'btn-step next';
+  }
+
+  // Atualiza progresso
+  atualizarProgresso();
+
+  // Scroll pro topo do conteúdo
+  document.getElementById('editorContent').scrollTop = 0;
+}
+
+function passoAnterior() { irParaStep(stepAtual - 1); }
+function passoSeguinte() {
+  if (stepAtual === 7) {
+    finalizarProposta();
+  } else {
+    irParaStep(stepAtual + 1);
+  }
+}
+
+function atualizarProgresso() {
+  const completos = calcularStepsCompletos();
+  const pct = Math.round((completos.length / 8) * 100);
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressPct').textContent = pct + '%';
+
+  // Marca steps completos na sidebar
+  document.querySelectorAll('.step-item').forEach(item => {
+    const s = parseInt(item.dataset.step);
+    item.classList.toggle('completed', completos.includes(s) && s !== stepAtual);
+  });
+}
+
+function calcularStepsCompletos() {
+  const c = [];
+  if (propostaAtual.tipoComercial) c.push(0);
+  if (propostaAtual.cliente?.razaoSocial?.trim() && propostaAtual.responsavel?.nome?.trim()) c.push(1);
+  if (propostaAtual.tipoCliente) c.push(2);
+  if (propostaAtual.diagnostico?.contexto?.trim() || propostaAtual.diagnostico?.necessidade?.trim()) c.push(3);
+  if (propostaAtual.itens?.length > 0) c.push(4);
+  if (propostaAtual.totalContrato > 0) c.push(5);
+  if (propostaAtual.condicoes?.pagamento?.trim() || propostaAtual.condicoes?.entrega?.trim()) c.push(6);
+  if (propostaAtual.encerramento?.diferenciais?.trim() || propostaAtual.encerramento?.mensagem?.trim()) c.push(7);
+  return c;
+}
+
+/* ═══════════════════════════════════════════════
+   LER / ESCREVER DADOS NOS CAMPOS
+═══════════════════════════════════════════════ */
+function carregarDadosNoEditor() {
+  const p = propostaAtual;
+
+  // Tipo comercial
+  document.querySelectorAll('.radio-card[data-tipo]').forEach(c => {
+    c.classList.toggle('selected', c.dataset.tipo === p.tipoComercial);
+  });
+
+  // Tipo cliente
+  document.querySelectorAll('.radio-card[data-modelo]').forEach(c => {
+    c.classList.toggle('selected', c.dataset.modelo === p.tipoCliente);
+  });
+
+  // Modalidade
+  document.querySelectorAll('.radio-pill[data-modalidade]').forEach(b => {
+    b.classList.toggle('selected', b.dataset.modalidade === p.modalidade);
+  });
+
+  // Cliente
+  setVal('cli-razaoSocial', p.cliente?.razaoSocial);
+  setVal('cli-cnpj', p.cliente?.cnpj);
+  setVal('cli-ie', p.cliente?.ie);
+  setVal('cli-endereco', p.cliente?.endereco);
+  setVal('cli-cidade', p.cliente?.cidade);
+  setVal('cli-uf', p.cliente?.uf);
+
+  // Responsável
+  setVal('resp-nome', p.responsavel?.nome);
+  setVal('resp-cargo', p.responsavel?.cargo);
+  setVal('resp-email', p.responsavel?.email);
+  setVal('resp-telefone', p.responsavel?.telefone);
+
+  // Diagnóstico
+  setVal('diag-contexto', p.diagnostico?.contexto);
+  setVal('diag-necessidade', p.diagnostico?.necessidade);
+  setVal('diag-justificativa', p.diagnostico?.justificativa);
+
+  // Solução
+  setVal('sol-intro', p.solucaoIntro);
+
+  // Resumo
+  selecionarPrazo(p.prazoMeses || 36, false);
+  setVal('descontoMensalValor', p.descontoMensalValor || 0);
+  setVal('descontoJustificativa', p.descontoJustificativa);
+
+  // Condições
+  setVal('cond-pagamento', p.condicoes?.pagamento);
+  setVal('cond-entrega', p.condicoes?.entrega);
+  setVal('cond-garantia', p.condicoes?.garantia);
+  setVal('cond-suporte', p.condicoes?.suporte);
+  setVal('cond-validade', p.validadeDias || 30);
+
+  // Encerramento
+  setVal('enc-diferenciais', p.encerramento?.diferenciais);
+  setVal('enc-mensagem', p.encerramento?.mensagem);
+
+  recalcularResumo();
+}
+
+function setVal(id, val) {
+  const el = document.getElementById(id);
+  if (el) el.value = val || (typeof val === 'number' ? 0 : '');
+}
+
+function lerDadosDoEditor() {
+  const p = propostaAtual;
+
+  p.cliente = {
+    razaoSocial: getVal('cli-razaoSocial'),
+    cnpj: getVal('cli-cnpj'),
+    ie: getVal('cli-ie'),
+    endereco: getVal('cli-endereco'),
+    cidade: getVal('cli-cidade'),
+    uf: getVal('cli-uf').toUpperCase()
+  };
+  p.responsavel = {
+    nome: getVal('resp-nome'),
+    cargo: getVal('resp-cargo'),
+    email: getVal('resp-email'),
+    telefone: getVal('resp-telefone')
+  };
+  p.diagnostico = {
+    contexto: getVal('diag-contexto'),
+    necessidade: getVal('diag-necessidade'),
+    justificativa: getVal('diag-justificativa')
+  };
+  p.solucaoIntro = getVal('sol-intro');
+  p.descontoMensalValor = parseFloat(getVal('descontoMensalValor')) || 0;
+  p.descontoJustificativa = getVal('descontoJustificativa');
+  p.condicoes = {
+    pagamento: getVal('cond-pagamento'),
+    entrega: getVal('cond-entrega'),
+    garantia: getVal('cond-garantia'),
+    suporte: getVal('cond-suporte')
+  };
+  p.validadeDias = parseInt(getVal('cond-validade')) || 30;
+  p.encerramento = {
+    diferenciais: getVal('enc-diferenciais'),
+    mensagem: getVal('enc-mensagem')
+  };
+}
+
+function getVal(id) {
+  const el = document.getElementById(id);
+  return el ? (el.value || '') : '';
+}
+
+/* ═══════════════════════════════════════════════
+   AÇÕES DE SELEÇÃO (radio cards)
+═══════════════════════════════════════════════ */
+function selecionarTipoComercial(tipo) {
+  // Por enquanto só locação mensal está habilitada
+  if (tipo !== 'locacao_mensal') {
+    showToast('Apenas Locação Mensal está disponível na Entrega 1', '');
+    return;
+  }
+  propostaAtual.tipoComercial = tipo;
+  document.querySelectorAll('.radio-card[data-tipo]').forEach(c => {
+    c.classList.toggle('selected', c.dataset.tipo === tipo);
+  });
+  autoSave();
+}
+
+function selecionarModelo(modelo) {
+  propostaAtual.tipoCliente = modelo;
+  document.querySelectorAll('.radio-card[data-modelo]').forEach(c => {
+    c.classList.toggle('selected', c.dataset.modelo === modelo);
+  });
+  autoSave();
+}
+
+function selecionarModalidade(mod) {
+  propostaAtual.modalidade = mod;
+  document.querySelectorAll('.radio-pill[data-modalidade]').forEach(b => {
+    b.classList.toggle('selected', b.dataset.modalidade === mod);
+  });
+  autoSave();
+}
+
+function selecionarPrazo(meses, save = true) {
+  propostaAtual.prazoMeses = meses;
+  document.querySelectorAll('.prazo-card').forEach(c => {
+    c.classList.toggle('selected', parseInt(c.dataset.prazo) === meses);
+  });
+  recalcularResumo();
+  if (save) autoSave();
+}
+
+/* ═══════════════════════════════════════════════
+   ITENS — Adicionar, remover, recalcular
+═══════════════════════════════════════════════ */
+function adicionarItem() {
+  propostaAtual.itens.push({
+    nome: '',
+    marca: '',
+    qtd: 1,
+    valorUnitMensal: 0,
+    totalMensal: 0
+  });
+  renderItens();
+  recalcularTotais();
+  autoSave();
+}
+
+function removerItem(idx) {
+  if (!confirm('Remover este item?')) return;
+  propostaAtual.itens.splice(idx, 1);
+  renderItens();
+  recalcularTotais();
+  autoSave();
+}
+
+function atualizarItem(idx, campo, valor) {
+  if (!propostaAtual.itens[idx]) return;
+  if (campo === 'qtd' || campo === 'valorUnitMensal') {
+    propostaAtual.itens[idx][campo] = parseFloat(valor) || 0;
+  } else {
+    propostaAtual.itens[idx][campo] = valor;
+  }
+  recalcularTotais();
+  autoSave();
+}
+
+function recalcularTotais() {
+  let totalMensal = 0;
+  propostaAtual.itens.forEach(item => {
+    item.totalMensal = (parseFloat(item.qtd) || 0) * (parseFloat(item.valorUnitMensal) || 0);
+    totalMensal += item.totalMensal;
+  });
+  propostaAtual.totalMensalBruto = totalMensal;
+  recalcularResumo();
+  // Atualiza display dos totais por linha
+  propostaAtual.itens.forEach((item, idx) => {
+    const cell = document.getElementById(`item-total-${idx}`);
+    if (cell) cell.textContent = formatarMoeda(item.totalMensal);
+  });
+}
+
+function recalcularResumo() {
+  const bruto = propostaAtual.totalMensalBruto || 0;
+  const desconto = parseFloat(getVal('descontoMensalValor')) || 0;
+  const final = Math.max(0, bruto - desconto);
+  const prazo = propostaAtual.prazoMeses || 36;
+  const totalContrato = final * prazo;
+
+  propostaAtual.descontoMensalValor = desconto;
+  propostaAtual.totalMensalFinal = final;
+  propostaAtual.totalContrato = totalContrato;
+
+  const elBruto = document.getElementById('resTotalMensalBruto');
+  const elFinal = document.getElementById('resTotalMensalFinal');
+  const elPrazo = document.getElementById('resPrazo');
+  const elTotal = document.getElementById('resTotalContrato');
+  if (elBruto) elBruto.textContent = formatarMoeda(bruto);
+  if (elFinal) elFinal.textContent = formatarMoeda(final);
+  if (elPrazo) elPrazo.textContent = prazo + ' meses';
+  if (elTotal) elTotal.textContent = formatarMoeda(totalContrato);
+}
+
+function renderItens() {
+  const container = document.getElementById('itensTableBody');
+  if (!container) return;
+
+  if (propostaAtual.itens.length === 0) {
+    container.innerHTML = `
+      <div class="itens-empty">
+        <div class="itens-empty-icon">📦</div>
+        <div class="itens-empty-text">Nenhum item adicionado ainda. Clique em "+ Adicionar item" para começar.</div>
+      </div>`;
+    return;
+  }
+
+  container.innerHTML = propostaAtual.itens.map((item, idx) => `
+    <div class="item-row">
+      <div class="item-num">${idx + 1}</div>
+      <textarea class="item-input" placeholder="Nome do item / descrição completa (pode ter várias linhas)"
+                oninput="atualizarItem(${idx}, 'nome', this.value); autoResizeTextarea(this)"
+                rows="1">${escHtml(item.nome || '')}</textarea>
+      <input type="text" class="item-input" placeholder="Marca"
+             value="${escHtml(item.marca || '')}"
+             oninput="atualizarItem(${idx}, 'marca', this.value)">
+      <input type="number" class="item-input numeric" min="0" step="1"
+             value="${item.qtd || 0}"
+             oninput="atualizarItem(${idx}, 'qtd', this.value)">
+      <input type="number" class="item-input numeric" min="0" step="0.01"
+             value="${item.valorUnitMensal || 0}"
+             oninput="atualizarItem(${idx}, 'valorUnitMensal', this.value)">
+      <div class="item-total-display" id="item-total-${idx}">${formatarMoeda(item.totalMensal || 0)}</div>
+      <button class="item-remove-btn" onclick="removerItem(${idx})" title="Remover">×</button>
+    </div>
+  `).join('');
+
+  // Auto-resize de todos os textareas após renderizar
+  container.querySelectorAll('textarea.item-input').forEach(t => autoResizeTextarea(t));
+}
+
+/* ═══════════════════════════════════════════════
+   AUTO-RESIZE DE TEXTAREA
+   Cresce/diminui conforme o conteúdo
+═══════════════════════════════════════════════ */
+function autoResizeTextarea(el) {
+  if (!el) return;
+  el.style.height = 'auto';
+  el.style.height = (el.scrollHeight + 2) + 'px';
+}
+
+/* ═══════════════════════════════════════════════
+   AUTO-SAVE
+═══════════════════════════════════════════════ */
+function autoSave() {
+  setAutosave('alterações pendentes...', 'pending');
+  if (autoSaveTimer) clearTimeout(autoSaveTimer);
+  autoSaveTimer = setTimeout(() => {
+    salvarNaNuvem(true);
+  }, 1500);
+  atualizarProgresso();
+  atualizarTitulo();
+}
+
+function setAutosave(texto, status) {
+  const dot = document.getElementById('autosaveDot');
+  const lbl = document.getElementById('autosaveLabel');
+  if (lbl) lbl.textContent = texto;
+  if (dot) {
+    dot.className = 'autosave-dot ' + (status || '');
+  }
+}
+
+/* ═══════════════════════════════════════════════
+   STATUS
+═══════════════════════════════════════════════ */
+function alterarStatus(novoStatus) {
+  propostaAtual.status = novoStatus;
+  autoSave();
+  showToast(`Status alterado para: ${novoStatus.toUpperCase()}`, 'ok');
+}
+
+/* ═══════════════════════════════════════════════
+   SALVAR NA NUVEM (Firebase)
+═══════════════════════════════════════════════ */
+async function salvarNaNuvem(silencioso = false) {
+  if (!usuarioLogado) return;
+
+  // Lê tudo do form
+  lerDadosDoEditor();
+  recalcularTotais();
+  recalcularResumo();
+
+  setAutosave('salvando...', 'pending');
+
+  try {
+    const payload = {
+      ...propostaAtual,
+      atualizadoEm: window.fbServerTimestamp(),
+      atualizadoPor: usuarioLogado.email,
+      atualizadoPorNome: usuarioLogado.nome || usuarioLogado.email
+    };
+    delete payload.id;
+
+    if (editandoPropostaId) {
+      // ATUALIZA existente
+      await window.fbUpdateDoc(
+        window.fbDoc(window.fbDb, 'propostas_comerciais', editandoPropostaId),
+        payload
+      );
+    } else {
+      // CRIA novo
+      payload.criadoEm = window.fbServerTimestamp();
+      payload.criadoPor = usuarioLogado.email;
+      payload.criadoPorNome = usuarioLogado.nome || usuarioLogado.email;
+      payload.numero = await gerarProximoNumero();
+
+      const docRef = await window.fbAddDoc(
+        window.fbCol(window.fbDb, 'propostas_comerciais'),
+        payload
+      );
+      editandoPropostaId = docRef.id;
+      propostaAtual.id = docRef.id;
+      propostaAtual.numero = payload.numero;
+      atualizarTitulo();
+    }
+
+    setAutosave('salvo', 'ok');
+    if (!silencioso) showToast('Proposta salva na nuvem', 'ok');
+  } catch (err) {
+    console.error('Erro ao salvar:', err);
+    setAutosave('erro ao salvar', 'err');
+    if (!silencioso) showToast('Erro ao salvar proposta', 'err');
+  }
+}
+
+/* ═══════════════════════════════════════════════
+   NUMERAÇÃO AUTOMÁTICA
+   Formato: NEWPC-YYYY-NNNN
+═══════════════════════════════════════════════ */
+async function gerarProximoNumero() {
+  const ano = new Date().getFullYear();
+  // Conta quantas propostas existem do ano corrente
+  const doAno = propostasLista.filter(p =>
+    p.numero?.startsWith(`NEWPC-${ano}-`)
+  );
+  const numeros = doAno
+    .map(p => parseInt(p.numero?.split('-')[2]) || 0)
+    .filter(n => n > 0);
+  const proximo = numeros.length > 0 ? Math.max(...numeros) + 1 : 1;
+  return `NEWPC-${ano}-${String(proximo).padStart(4, '0')}`;
+}
+
+/* ═══════════════════════════════════════════════
+   FINALIZAR (botão último passo)
+═══════════════════════════════════════════════ */
+async function finalizarProposta() {
+  await salvarNaNuvem(false);
+  fecharEditor();
+  showToast('Proposta finalizada com sucesso!', 'ok');
+}
+
+/* ═══════════════════════════════════════════════
+   DUPLICAR
+═══════════════════════════════════════════════ */
+function duplicarProposta(id) {
+  if (event) event.stopPropagation();
+  const p = propostasLista.find(x => x.id === id);
+  if (!p) return;
+
+  const copia = JSON.parse(JSON.stringify(p));
+  delete copia.id;
+  delete copia.numero;
+  delete copia.criadoEm;
+  delete copia.atualizadoEm;
+  copia.status = 'rascunho';
+  copia.cliente.razaoSocial = (copia.cliente.razaoSocial || '') + ' (cópia)';
+
+  editandoPropostaId = null;
+  propostaAtual = copia;
+  abrirEditor();
+  showToast('Duplicado! Edite e salve para criar a nova proposta.', 'ok');
+}
+
+async function excluirProposta(id) {
+  if (event) event.stopPropagation();
+  const proposta = propostasLista.find(p => p.id === id);
+  if (!proposta) return;
+
+  const nome = proposta.cliente?.razaoSocial || proposta.numero || 'sem nome';
+  if (!confirm(`Excluir a proposta "${nome}"?\n\nEsta ação não pode ser desfeita.`)) return;
+
+  try {
+    await window.fbDeleteDoc(window.fbDoc(window.fbDb, 'propostas_comerciais', id));
+    showToast('Proposta excluída', 'ok');
+  } catch (err) {
+    console.error(err);
+    showToast('Erro ao excluir proposta', 'err');
+  }
+}
+
+function limparFiltros() {
+  document.getElementById('searchInput').value = '';
+  document.getElementById('filtroStatus').value = 'todos';
+  document.getElementById('filtroTipo').value = 'todos';
+  document.getElementById('filtroAutor').value = 'todos';
+  renderPropostas();
+}
+
+// Expor todas as funções globalmente
+window.abrirProposta = abrirProposta;
+window.editarProposta = editarProposta;
+window.duplicarProposta = duplicarProposta;
+window.excluirProposta = excluirProposta;
+window.limparFiltros = limparFiltros;
+window.renderPropostas = renderPropostas;
+window.fecharEditor = fecharEditor;
+window.irParaStep = irParaStep;
+window.passoAnterior = passoAnterior;
+window.passoSeguinte = passoSeguinte;
+window.selecionarTipoComercial = selecionarTipoComercial;
+window.selecionarModelo = selecionarModelo;
+window.selecionarModalidade = selecionarModalidade;
+window.selecionarPrazo = selecionarPrazo;
+window.adicionarItem = adicionarItem;
+window.removerItem = removerItem;
+window.atualizarItem = atualizarItem;
+window.recalcularResumo = recalcularResumo;
+window.alterarStatus = alterarStatus;
+window.autoSave = autoSave;
+window.autoResizeTextarea = autoResizeTextarea;
+window.abrirNovaProposta = abrirNovaProposta;
+window.finalizarProposta = finalizarProposta;
+
+/* ═══════════════════════════════════════════════
+   UTILS
+═══════════════════════════════════════════════ */
+function showToast(texto, tipo = '') {
+  const t = document.getElementById('toast');
+  t.textContent = texto;
+  t.className = 'toast show ' + tipo;
+  clearTimeout(window._toastTimer);
+  window._toastTimer = setTimeout(() => {
+    t.classList.remove('show');
+  }, 3500);
+}
+
+function escHtml(s) {
+  if (s === null || s === undefined) return '';
+  return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+
+function formatarMoeda(valor) {
+  if (typeof valor !== 'number') valor = parseFloat(valor) || 0;
+  return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+}
+
+function formatarData(ts) {
+  if (!ts) return '—';
+  let ms = 0;
+  if (typeof ts === 'number') ms = ts;
+  else if (ts.toMillis) ms = ts.toMillis();
+  else if (ts.seconds) ms = ts.seconds * 1000;
+  if (!ms) return '—';
+  const d = new Date(ms);
+  return d.toLocaleDateString('pt-BR');
+}
+
+function formatarDataHora(ts) {
+  if (!ts) return '—';
+  let ms = 0;
+  if (typeof ts === 'number') ms = ts;
+  else if (ts.toMillis) ms = ts.toMillis();
+  else if (ts.seconds) ms = ts.seconds * 1000;
+  if (!ms) return '—';
+  const d = new Date(ms);
+  return d.toLocaleDateString('pt-BR') + ' ' + d.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
+}
+
+// Expor globalmente para próximas etapas
+window.showToast = showToast;
+window.escHtml = escHtml;
+window.formatarMoeda = formatarMoeda;
+window.formatarData = formatarData;
+window.formatarDataHora = formatarDataHora;
+
+// INICIALIZA
+window.addEventListener('DOMContentLoaded', inicializar);
+</script>
+
+</body>
+</html>
