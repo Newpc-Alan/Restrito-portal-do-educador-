@@ -1894,6 +1894,74 @@ textarea.fi.grande { min-height: 140px; }
 .cloud-status-tag.ok { background: rgba(34,166,58,.15); color: var(--verde-vivo); }
 .cloud-status-tag.err { background: rgba(198,56,56,.15); color: #ff8989; }
 
+/* Modal de Progresso (overlay durante salvamento + impressão) */
+.modal-progresso {
+  position: fixed;
+  inset: 0;
+  background: rgba(15,44,74,.7);
+  backdrop-filter: blur(8px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 9500;
+  padding: 20px;
+}
+.modal-progresso.open { display: flex; }
+.progresso-card {
+  background: white;
+  border-radius: 16px;
+  padding: 36px 44px;
+  min-width: 320px;
+  max-width: 420px;
+  text-align: center;
+  box-shadow: 0 24px 80px rgba(0,0,0,.4);
+  animation: progressoIn .25s cubic-bezier(.4,0,.2,1);
+}
+@keyframes progressoIn {
+  from { opacity: 0; transform: translateY(10px) scale(.96); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+.progresso-spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid var(--cinza-2);
+  border-top-color: var(--verde);
+  border-radius: 50%;
+  animation: bootspin 1s linear infinite;
+  margin: 0 auto 18px;
+}
+.progresso-check {
+  width: 48px;
+  height: 48px;
+  background: var(--verde);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  font-weight: bold;
+  margin: 0 auto 18px;
+  animation: checkBounce .4s cubic-bezier(.4,0,.2,1);
+}
+@keyframes checkBounce {
+  0%   { transform: scale(0); }
+  60%  { transform: scale(1.15); }
+  100% { transform: scale(1); }
+}
+.progresso-titulo {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--azul);
+  margin-bottom: 6px;
+  font-family: 'Outfit', sans-serif;
+}
+.progresso-sub {
+  font-size: 13px;
+  color: var(--cinza-4);
+  font-family: 'Outfit', sans-serif;
+}
+
 
 </style>
 </head>
@@ -2108,21 +2176,7 @@ textarea.fi.grande { min-height: 140px; }
         ☁ Episódios ▾
       </button>
       <div class="dd-menu" id="ddMenu">
-        <div class="dd-section-title">📡 Salvar na Nuvem NEWPC</div>
-        <button class="dd-item" onclick="salvarNaNuvem(false);fecharDropdown()">
-          <div class="dd-item-icon verde">💾</div>
-          <div class="dd-item-text">
-            <span class="dd-item-label" id="lblSalvarNuvem">Salvar episódio</span>
-            <span class="dd-item-desc">Atualiza o episódio atual ou cria novo se inédito</span>
-          </div>
-        </button>
-        <button class="dd-item" onclick="salvarNaNuvem(true);fecharDropdown()">
-          <div class="dd-item-icon azul">📋</div>
-          <div class="dd-item-text">
-            <span class="dd-item-label">Salvar como novo</span>
-            <span class="dd-item-desc">Duplica e salva como episódio independente</span>
-          </div>
-        </button>
+        <div class="dd-section-title">📡 Nuvem NEWPC</div>
         <button class="dd-item" onclick="abrirNuvem();fecharDropdown()">
           <div class="dd-item-icon ouro">☁</div>
           <div class="dd-item-text">
@@ -2130,13 +2184,20 @@ textarea.fi.grande { min-height: 140px; }
             <span class="dd-item-desc">Lista todos os episódios salvos pela equipe</span>
           </div>
         </button>
+        <button class="dd-item" onclick="novoEpisodio();fecharDropdown()">
+          <div class="dd-item-icon verde">✨</div>
+          <div class="dd-item-text">
+            <span class="dd-item-label">Novo episódio</span>
+            <span class="dd-item-desc">Limpa o editor para começar um roteiro do zero</span>
+          </div>
+        </button>
         <div class="dd-sep"></div>
         <div class="dd-section-title">📁 Local (este navegador)</div>
         <button class="dd-item" onclick="salvarRascunho();fecharDropdown()">
           <div class="dd-item-icon cinza">💾</div>
           <div class="dd-item-text">
-            <span class="dd-item-label">Salvar no navegador</span>
-            <span class="dd-item-desc">Backup local (até 10 episódios)</span>
+            <span class="dd-item-label">Salvar rascunho local</span>
+            <span class="dd-item-desc">Backup neste navegador (até 10 episódios)</span>
           </div>
         </button>
         <button class="dd-item" onclick="exportarJSON();fecharDropdown()">
@@ -2165,7 +2226,7 @@ textarea.fi.grande { min-height: 140px; }
     </div>
     <input type="file" id="importFile" accept=".json" onchange="importarJSON(event)" style="display:none">
     <button class="btn btn-ghost" onclick="abrirTeleprompter()" style="border:1px solid rgba(255,255,255,.2);">🎙 Teleprompter</button>
-    <button class="btn btn-verde" onclick="validarEImprimir()">🖨 Imprimir / PDF</button>
+    <button class="btn btn-verde" onclick="validarEImprimir()" title="Salva o episódio na nuvem NEWPC e abre janela de impressão">☁ Salvar e Imprimir</button>
   </div>
 </header>
 
@@ -2422,7 +2483,7 @@ Facebook: portal do educador / NEWPC Tecnologia</textarea>
       </div>
       <div class="preview-btns">
         <button class="btn btn-light" onclick="preencherExemplo()">✦ Carregar exemplo</button>
-        <button class="btn btn-verde" onclick="validarEImprimir()">🖨 Imprimir / Salvar PDF</button>
+        <button class="btn btn-verde" onclick="validarEImprimir()">☁ Salvar na Nuvem e Imprimir</button>
       </div>
     </div>
     <div id="docOutput"></div>
@@ -3686,18 +3747,18 @@ function validarEImprimir() {
   lista.innerHTML = itens;
 
   if (erros === 0 && avisos === 0) {
-    // Tudo OK — imprimir direto
-    window.print();
+    // Tudo OK — salva e imprime
+    salvarAntesDeImprimir();
     return;
   }
 
   const btnConfirm = document.getElementById('btnConfirmarPrint');
   if (erros > 0) {
     summary.innerHTML = `<strong style="color:#dc2626">${erros} campo(s) obrigatório(s) não preenchido(s).</strong> O documento sairá incompleto.`;
-    btnConfirm.textContent = 'Imprimir mesmo assim →';
+    btnConfirm.textContent = 'Salvar e Imprimir mesmo assim →';
   } else {
-    summary.innerHTML = `<span style="color:#92660a">${avisos} campo(s) opcional(is) vazios.</span> O documento está pronto para imprimir.`;
-    btnConfirm.textContent = 'Imprimir →';
+    summary.innerHTML = `<span style="color:#92660a">${avisos} campo(s) opcional(is) vazios.</span> O documento está pronto para salvar e imprimir.`;
+    btnConfirm.textContent = 'Salvar e Imprimir →';
   }
 
   document.getElementById('modalValidar').classList.add('open');
@@ -3705,7 +3766,7 @@ function validarEImprimir() {
 
 function confirmarImpressao() {
   document.getElementById('modalValidar').classList.remove('open');
-  setTimeout(() => window.print(), 100);
+  setTimeout(() => salvarAntesDeImprimir(), 100);
 }
 
 /* ═══════════════════════════════════════════════
@@ -3998,25 +4059,38 @@ function gerarNomeEpisodio(dados) {
 /* ═══════════════════════════════════════════════
    SALVAR NA NUVEM
 ═══════════════════════════════════════════════ */
-async function salvarNaNuvem(forcarNovo) {
+/**
+ * Salva o roteiro atual na nuvem com LÓGICA INTELIGENTE baseada em COD.
+ *
+ * Regras:
+ * - Se COD do episódio existe na nuvem (mesmo que em outro registro) → ATUALIZA
+ * - Se COD não existe na nuvem → CRIA novo
+ * - Se COD vazio → cria novo (não dá pra deduplicar sem identificador)
+ *
+ * Retorna: { sucesso, acao: 'criado'|'atualizado', nome, id, erro? }
+ */
+async function salvarNaNuvem() {
   if (!usuarioLogadoNuvem) {
-    showToast('Você precisa estar logado','err');
-    return;
+    return { sucesso: false, erro: 'Usuário não autenticado' };
   }
 
   const dados = coletarDadosRoteiro();
   const nome = gerarNomeEpisodio(dados);
-
-  // Validação mínima
-  if (nome === 'Episódio sem título') {
-    if (!confirm('Este episódio não tem código nem nome. Salvar mesmo assim como "Episódio sem título"?')) {
-      return;
-    }
-  }
+  const codAtual = (dados.codEpisodio || '').trim();
 
   setAutosave('Salvando na nuvem...', 'pending');
 
   try {
+    // LÓGICA INTELIGENTE: procura na lista da nuvem se já existe alguém com o mesmo COD
+    let idExistente = null;
+    if (codAtual) {
+      const encontrado = listaRoteirosNuvem.find(r => {
+        const codR = (r.dados && r.dados.codEpisodio || '').trim();
+        return codR && codR === codAtual;
+      });
+      if (encontrado) idExistente = encontrado.id;
+    }
+
     const payload = {
       nome: nome,
       dados: dados,
@@ -4025,17 +4099,19 @@ async function salvarNaNuvem(forcarNovo) {
       atualizadoPorNome: usuarioLogadoNuvem.nome || usuarioLogadoNuvem.email
     };
 
-    if (editandoRoteiroId && !forcarNovo) {
-      // ATUALIZAR existente
+    if (idExistente) {
+      // ATUALIZA o existente (mesmo COD)
       await window.fbUpdateDoc(
-        window.fbDoc(window.fbDb, 'roteiros_podcast', editandoRoteiroId),
+        window.fbDoc(window.fbDb, 'roteiros_podcast', idExistente),
         payload
       );
+      editandoRoteiroId = idExistente;
       editandoRoteiroNome = nome;
       atualizarBadgeEditando();
-      showToast(`☁ Atualizado: ${nome}`, 'ok');
+      setAutosave('Atualizado na nuvem', 'ok');
+      return { sucesso: true, acao: 'atualizado', nome, id: idExistente };
     } else {
-      // CRIAR novo
+      // CRIA novo
       payload.criadoEm = window.fbServerTimestamp();
       payload.criadoPor = usuarioLogadoNuvem.email;
       payload.criadoPorNome = usuarioLogadoNuvem.nome || usuarioLogadoNuvem.email;
@@ -4047,14 +4123,134 @@ async function salvarNaNuvem(forcarNovo) {
       editandoRoteiroId = docRef.id;
       editandoRoteiroNome = nome;
       atualizarBadgeEditando();
-      showToast(`☁ Salvo na nuvem: ${nome}`, 'ok');
+      setAutosave('Salvo na nuvem', 'ok');
+      return { sucesso: true, acao: 'criado', nome, id: docRef.id };
     }
-    setAutosave('Salvo na nuvem', 'ok');
   } catch (err) {
     console.error('Erro ao salvar na nuvem:', err);
     setAutosave('Erro ao salvar', 'err');
-    showToast('Erro ao salvar na nuvem. Verifique conexão.', 'err');
+    return { sucesso: false, erro: err.message || 'Erro de conexão' };
   }
+}
+
+/**
+ * Fluxo principal: salva na nuvem AUTOMATICAMENTE e depois imprime.
+ * Usado pelo botão "☁ Salvar e Imprimir".
+ */
+async function salvarAntesDeImprimir() {
+  // 1. Mostra modal de progresso
+  abrirModalProgresso('Salvando episódio na nuvem NEWPC...');
+
+  // 2. Tenta salvar
+  const resultado = await salvarNaNuvem();
+
+  if (!resultado.sucesso) {
+    // Falhou — pergunta se quer imprimir mesmo assim
+    fecharModalProgresso();
+    const msg = `Não foi possível salvar na nuvem.\n\nMotivo: ${resultado.erro || 'desconhecido'}\n\nDeseja imprimir mesmo assim (sem salvar)?`;
+    if (confirm(msg)) {
+      setTimeout(() => window.print(), 100);
+    }
+    return;
+  }
+
+  // 3. Salvou com sucesso — atualiza modal de progresso
+  const acaoTexto = resultado.acao === 'atualizado'
+    ? `✓ Episódio atualizado na nuvem`
+    : `✓ Novo episódio salvo na nuvem`;
+
+  atualizarModalProgresso(acaoTexto, resultado.nome);
+
+  // 4. Aguarda 1.2s para usuário ver, depois imprime
+  setTimeout(() => {
+    fecharModalProgresso();
+    setTimeout(() => window.print(), 200);
+  }, 1200);
+}
+
+/**
+ * Limpa o editor para começar um roteiro novo do zero.
+ */
+function novoEpisodio() {
+  if (editandoRoteiroId || lerDados().codEpisodio || lerDados().nomeCompleto) {
+    if (!confirm('Deseja começar um NOVO episódio?\n\nO editor será limpo. Se o atual já foi salvo na nuvem, ele continua lá.')) {
+      return;
+    }
+  }
+  // Reset
+  editandoRoteiroId = null;
+  editandoRoteiroNome = '';
+  atualizarBadgeEditando();
+  // Limpa campos
+  if (typeof preencherExemplo === 'function') {
+    // Se tem função de preencher exemplo, podemos fazer um reset usando aplicarDados vazio
+  }
+  // Limpa todos os campos input/textarea principais
+  document.querySelectorAll('input[type=text], input[type=date], input[type=time], input[type=number], textarea, select').forEach(el => {
+    if (el.id && el.id !== 'nuvemSearch' && el.id !== 'importFile' && el.id !== 'loginEmail' && el.id !== 'loginSenha') {
+      el.value = '';
+    }
+  });
+  // Reset arrays
+  if (typeof blocos !== 'undefined') { blocos = []; nextBlocoId = 1; if (typeof renderBlocos === 'function') renderBlocos(); }
+  if (typeof apresentadores !== 'undefined') { apresentadores = []; nextApresId = 1; if (typeof renderApresentadores === 'function') renderApresentadores(); }
+  if (typeof fotoSrc !== 'undefined') { fotoSrc = null; const fa = document.getElementById('fotoArea'); if (fa) fa.innerHTML = '<div class="upload-empty">Clique para selecionar a foto</div>'; }
+
+  // Gerar novo código de protocolo automático (se a função existir no fluxo original)
+  const codEl = document.getElementById('codEpisodio');
+  if (codEl) codEl.value = gerarCodigoProtocolo();
+
+  if (typeof atualizar === 'function') atualizar();
+  showToast('Novo episódio iniciado','ok');
+  setAutosave('Novo episódio', 'pending');
+}
+
+function gerarCodigoProtocolo() {
+  const d = new Date();
+  const ano = d.getFullYear().toString().slice(-2);
+  const mes = String(d.getMonth()+1).padStart(2,'0');
+  const dia = String(d.getDate()).padStart(2,'0');
+  const rnd = Math.floor(Math.random()*900+100);
+  return `EP-${ano}${mes}${dia}-${rnd}`;
+}
+
+/* ═══════════════════════════════════════════════
+   MODAL DE PROGRESSO (overlay durante salvamento)
+═══════════════════════════════════════════════ */
+function abrirModalProgresso(texto) {
+  let modal = document.getElementById('modalProgresso');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'modalProgresso';
+    modal.className = 'modal-progresso';
+    modal.innerHTML = `
+      <div class="progresso-card">
+        <div class="progresso-spinner" id="progressoSpinner"></div>
+        <div class="progresso-check" id="progressoCheck" style="display:none">✓</div>
+        <div class="progresso-titulo" id="progressoTitulo">Salvando...</div>
+        <div class="progresso-sub" id="progressoSub"></div>
+      </div>`;
+    document.body.appendChild(modal);
+  }
+  document.getElementById('progressoTitulo').textContent = texto || 'Salvando...';
+  document.getElementById('progressoSub').textContent = '';
+  document.getElementById('progressoSpinner').style.display = 'block';
+  document.getElementById('progressoCheck').style.display = 'none';
+  modal.classList.add('open');
+}
+
+function atualizarModalProgresso(titulo, sub) {
+  const modal = document.getElementById('modalProgresso');
+  if (!modal) return;
+  document.getElementById('progressoTitulo').textContent = titulo;
+  document.getElementById('progressoSub').textContent = sub || '';
+  document.getElementById('progressoSpinner').style.display = 'none';
+  document.getElementById('progressoCheck').style.display = 'block';
+}
+
+function fecharModalProgresso() {
+  const modal = document.getElementById('modalProgresso');
+  if (modal) modal.classList.remove('open');
 }
 
 function atualizarBadgeEditando() {
@@ -4114,7 +4310,7 @@ function renderListaNuvem() {
       <div class="nuvem-empty">
         <div class="nuvem-empty-icon">${busca ? '🔍' : '☁'}</div>
         <div class="nuvem-empty-title">${busca ? 'Nenhum resultado encontrado' : 'Nenhum episódio na nuvem ainda'}</div>
-        <div class="nuvem-empty-text">${busca ? 'Tente outros termos' : 'Crie um episódio e clique em "Salvar episódio" para começar'}</div>
+        <div class="nuvem-empty-text">${busca ? 'Tente outros termos' : 'Crie um episódio e clique em "☁ Salvar e Imprimir" para começar'}</div>
       </div>`;
     return;
   }
@@ -4236,6 +4432,8 @@ document.addEventListener('keydown', (e) => {
 
 // Expor funções globalmente
 window.salvarNaNuvem = salvarNaNuvem;
+window.salvarAntesDeImprimir = salvarAntesDeImprimir;
+window.novoEpisodio = novoEpisodio;
 window.abrirNuvem = abrirNuvem;
 window.fecharNuvem = fecharNuvem;
 window.filtrarNuvem = filtrarNuvem;
