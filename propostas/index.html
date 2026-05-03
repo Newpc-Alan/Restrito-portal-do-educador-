@@ -1437,7 +1437,7 @@ textarea.item-input:focus {
   font-size: 10.5pt;
   line-height: 1.55;
   position: relative;
-  page-break-after: always;
+  page-break-after: auto;
 }
 .proposta-pagina:last-child { page-break-after: auto; }
 
@@ -1477,7 +1477,7 @@ textarea.item-input:focus {
   font-size: 10pt;
   font-weight: 600;
   letter-spacing: .5px;
-  margin: -6px -20mm 22px;
+  margin: -6px -20mm 28px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -1485,24 +1485,6 @@ textarea.item-input:focus {
 .prop-numero-bar .num {
   font-family: 'JetBrains Mono', monospace;
   font-weight: 700;
-}
-
-/* TÍTULO da proposta */
-.prop-titulo {
-  text-align: center;
-  margin: 18px 0 26px;
-}
-.prop-titulo h1 {
-  font-size: 22pt;
-  font-weight: 800;
-  color: var(--azul);
-  letter-spacing: -0.5px;
-  margin-bottom: 4px;
-}
-.prop-titulo .subtitle {
-  font-size: 12pt;
-  color: var(--cinza-5);
-  font-weight: 400;
 }
 
 /* CARD do cliente */
@@ -1796,9 +1778,11 @@ textarea.item-input:focus {
   .proposta-pagina {
     margin: 0 !important;
     box-shadow: none !important;
-    page-break-after: always;
+    page-break-after: auto;
+    page-break-inside: auto;
     width: 100%;
     min-height: auto;
+    max-height: none;
   }
   .proposta-pagina:last-child {
     page-break-after: auto;
@@ -2506,11 +2490,7 @@ textarea.item-input:focus {
       <span class="num" id="vizNumeroBar">—</span>
     </div>
 
-    <!-- Título principal -->
-    <div class="prop-titulo">
-      <h1 id="vizTituloProposta">Solução Tecnológica</h1>
-      <div class="subtitle" id="vizSubtitle">Locação Mensal de Equipamentos</div>
-    </div>
+    <!-- Título principal removido — só fica a faixa azul "PROPOSTA COMERCIAL" -->
 
     <!-- Card do cliente -->
     <div class="prop-cliente">
@@ -3519,14 +3499,6 @@ const MODELO_LABELS = {
   empresa: 'empresa parceira'
 };
 
-const MODALIDADE_LABELS = {
-  pregao: 'Pregão Eletrônico',
-  dispensa: 'Dispensa de Licitação',
-  direta: 'Compra Direta',
-  adesao: 'Adesão a Ata de Registro de Preços',
-  contrato_privado: 'Contrato Privado'
-};
-
 function abrirVisualizacao() {
   if (!propostaAtual) {
     showToast('Nenhuma proposta carregada', 'err');
@@ -3576,14 +3548,6 @@ function popularVisualizacao(p) {
   setText('vizNumero', numero);
   setText('vizNumeroBar', numero);
 
-  // Subtítulo conforme tipo
-  const subtitleMap = {
-    venda: 'Venda Direta de Equipamentos',
-    locacao_mensal: 'Locação Mensal de Equipamentos',
-    diaria: 'Locação por Período Determinado'
-  };
-  setText('vizSubtitle', subtitleMap[p.tipoComercial] || 'Solução Tecnológica');
-
   // Cliente
   const cliente = p.cliente || {};
   setText('vizClienteNome', cliente.razaoSocial || '(cliente não informado)');
@@ -3594,7 +3558,15 @@ function popularVisualizacao(p) {
   if (cliente.cidade || cliente.uf) {
     infoPartes.push(`<strong>Cidade:</strong> ${escHtml(cliente.cidade || '')}/${escHtml(cliente.uf || '')}`);
   }
-  if (p.modalidade) infoPartes.push(`<strong>Modalidade:</strong> ${MODALIDADE_LABELS[p.modalidade] || p.modalidade}`);
+
+  // "Aos cuidados de" — Nome + Cargo — Email
+  const resp = p.responsavel || {};
+  if (resp.nome) {
+    let cuidadosTexto = `<strong>Aos cuidados de:</strong> ${escHtml(resp.nome)}`;
+    if (resp.cargo) cuidadosTexto += `, ${escHtml(resp.cargo)}`;
+    if (resp.email) cuidadosTexto += ` — ${escHtml(resp.email)}`;
+    infoPartes.push(cuidadosTexto);
+  }
 
   document.getElementById('vizClienteInfo').innerHTML =
     infoPartes.map(s => `<span>${s}</span>`).join('') || '—';
