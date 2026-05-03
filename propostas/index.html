@@ -1349,6 +1349,515 @@ textarea.item-input:focus {
   .stats-grid { grid-template-columns: 1fr; }
 }
 
+/* ═══════════════════════════════════════════════════════════════════
+   VISUALIZAÇÃO / IMPRESSÃO DA PROPOSTA
+   Layout A4 profissional NEWPC
+═══════════════════════════════════════════════════════════════════ */
+
+/* Overlay da tela de visualização */
+.viz-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 44, 74, 0.85);
+  z-index: 1000;
+  overflow-y: auto;
+  display: none;
+  padding: 24px 0;
+}
+.viz-overlay.open { display: block; }
+
+/* Barra de ações (em cima da página A4) */
+.viz-toolbar {
+  max-width: 800px;
+  margin: 0 auto 16px;
+  padding: 0 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.viz-toolbar-info {
+  color: white;
+  font-size: 12px;
+  opacity: .85;
+}
+.viz-toolbar-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.btn-viz {
+  background: white;
+  color: var(--azul);
+  padding: 9px 16px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: var(--tr);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: inherit;
+}
+.btn-viz:hover {
+  background: var(--cinza-1);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0,0,0,.15);
+}
+.btn-viz.primary {
+  background: var(--verde);
+  color: white;
+}
+.btn-viz.primary:hover {
+  background: #145520;
+}
+.btn-viz.danger {
+  background: transparent;
+  color: white;
+  border: 1px solid rgba(255,255,255,.3);
+}
+.btn-viz.danger:hover {
+  background: rgba(255,255,255,.1);
+  border-color: white;
+}
+
+/* PÁGINA A4 */
+.proposta-pagina {
+  background: white;
+  width: 210mm;
+  min-height: 297mm;
+  margin: 0 auto 16px;
+  padding: 18mm 20mm;
+  box-shadow: 0 6px 24px rgba(0,0,0,.3);
+  font-family: 'Outfit', sans-serif;
+  color: #222;
+  font-size: 10.5pt;
+  line-height: 1.55;
+  position: relative;
+  page-break-after: always;
+}
+.proposta-pagina:last-child { page-break-after: auto; }
+
+/* CABEÇALHO da proposta */
+.prop-header {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 18px;
+  align-items: center;
+  padding-bottom: 14px;
+  border-bottom: 3px solid var(--verde);
+  margin-bottom: 22px;
+}
+.prop-header-logo {
+  height: 50px;
+  width: auto;
+  display: block;
+}
+.prop-header-info {
+  text-align: right;
+  font-size: 9pt;
+  color: #555;
+  line-height: 1.4;
+}
+.prop-header-info strong {
+  display: block;
+  font-size: 11pt;
+  color: var(--azul);
+  margin-bottom: 3px;
+}
+
+/* Faixa de identificação da proposta */
+.prop-numero-bar {
+  background: var(--azul);
+  color: white;
+  padding: 8px 16px;
+  font-size: 10pt;
+  font-weight: 600;
+  letter-spacing: .5px;
+  margin: -6px -20mm 22px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.prop-numero-bar .num {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+}
+
+/* TÍTULO da proposta */
+.prop-titulo {
+  text-align: center;
+  margin: 18px 0 26px;
+}
+.prop-titulo h1 {
+  font-size: 22pt;
+  font-weight: 800;
+  color: var(--azul);
+  letter-spacing: -0.5px;
+  margin-bottom: 4px;
+}
+.prop-titulo .subtitle {
+  font-size: 12pt;
+  color: var(--cinza-5);
+  font-weight: 400;
+}
+
+/* CARD do cliente */
+.prop-cliente {
+  background: var(--azul-soft);
+  border-left: 4px solid var(--azul);
+  padding: 14px 18px;
+  margin-bottom: 22px;
+  border-radius: 0 6px 6px 0;
+}
+.prop-cliente-label {
+  font-size: 8.5pt;
+  font-weight: 700;
+  color: var(--azul);
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.prop-cliente-nome {
+  font-size: 14pt;
+  font-weight: 700;
+  color: var(--preto);
+  margin-bottom: 6px;
+}
+.prop-cliente-info {
+  font-size: 9.5pt;
+  color: #555;
+  line-height: 1.5;
+}
+.prop-cliente-info span {
+  display: inline-block;
+  margin-right: 18px;
+}
+.prop-cliente-info strong {
+  color: #333;
+}
+
+/* SEÇÕES */
+.prop-secao {
+  margin-bottom: 22px;
+}
+.prop-secao-titulo {
+  font-size: 11.5pt;
+  font-weight: 700;
+  color: var(--azul);
+  padding: 8px 0;
+  margin-bottom: 10px;
+  border-bottom: 2px solid var(--cinza-2);
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+}
+.prop-secao-titulo .icon {
+  display: inline-block;
+  margin-right: 6px;
+  color: var(--verde);
+}
+.prop-secao-conteudo {
+  font-size: 10.5pt;
+  color: #333;
+  line-height: 1.6;
+  text-align: justify;
+  white-space: pre-wrap;
+}
+.prop-secao-conteudo p {
+  margin-bottom: 10px;
+}
+
+/* Sub-blocos do diagnóstico */
+.prop-diag-bloco {
+  margin-bottom: 14px;
+}
+.prop-diag-label {
+  font-size: 9.5pt;
+  font-weight: 700;
+  color: var(--cinza-5);
+  margin-bottom: 4px;
+}
+.prop-diag-texto {
+  font-size: 10.5pt;
+  color: #333;
+  line-height: 1.6;
+  text-align: justify;
+  white-space: pre-wrap;
+}
+
+/* TABELA DE ITENS */
+.prop-tabela {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 12px;
+  font-size: 9.5pt;
+}
+.prop-tabela thead th {
+  background: var(--azul);
+  color: white;
+  padding: 9px 8px;
+  text-align: left;
+  font-weight: 700;
+  font-size: 9pt;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+.prop-tabela thead th.num { text-align: center; width: 32px; }
+.prop-tabela thead th.qtd { text-align: center; width: 50px; }
+.prop-tabela thead th.valor { text-align: right; width: 100px; }
+.prop-tabela tbody td {
+  padding: 8px;
+  border-bottom: 1px solid var(--cinza-2);
+  vertical-align: top;
+}
+.prop-tabela tbody tr:nth-child(even) {
+  background: var(--cinza-1);
+}
+.prop-tabela tbody td.num {
+  text-align: center;
+  font-weight: 700;
+  color: var(--azul);
+}
+.prop-tabela tbody td.qtd { text-align: center; }
+.prop-tabela tbody td.valor {
+  text-align: right;
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 600;
+}
+.prop-tabela tbody td.descricao {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+.prop-tabela tbody td.descricao .nome {
+  font-weight: 700;
+  color: var(--preto);
+  display: block;
+  margin-bottom: 2px;
+}
+.prop-tabela tbody td.marca {
+  font-size: 9pt;
+  color: #666;
+}
+
+/* RESUMO FINANCEIRO */
+.prop-resumo {
+  background: linear-gradient(135deg, var(--verde-soft) 0%, #dceee0 100%);
+  border: 2px solid var(--verde);
+  border-radius: 8px;
+  padding: 18px 22px;
+  margin: 18px 0;
+}
+.prop-resumo-linha {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+  font-size: 10.5pt;
+}
+.prop-resumo-linha.total {
+  border-top: 2px solid var(--verde);
+  margin-top: 10px;
+  padding-top: 12px;
+  font-size: 14pt;
+  font-weight: 800;
+  color: var(--azul);
+}
+.prop-resumo-label {
+  color: #444;
+}
+.prop-resumo-valor {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  color: var(--azul);
+}
+.prop-resumo-linha.total .prop-resumo-valor {
+  color: var(--verde);
+  font-size: 16pt;
+}
+.prop-resumo-sub {
+  font-size: 9pt;
+  color: #777;
+  text-align: center;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--cinza-3);
+}
+
+/* CONDIÇÕES em grid 2x2 */
+.prop-condicoes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.prop-condicao-card {
+  background: var(--cinza-1);
+  border-left: 3px solid var(--azul);
+  padding: 10px 14px;
+  border-radius: 0 6px 6px 0;
+}
+.prop-condicao-titulo {
+  font-size: 8.5pt;
+  font-weight: 700;
+  color: var(--azul);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  margin-bottom: 4px;
+}
+.prop-condicao-texto {
+  font-size: 10pt;
+  color: #333;
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+
+/* ASSINATURAS (só aparecem na impressão por padrão) */
+.prop-assinaturas {
+  margin-top: 50px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 60px;
+}
+.prop-assinatura-bloco {
+  text-align: center;
+}
+.prop-assinatura-linha {
+  border-top: 1px solid #333;
+  margin-bottom: 6px;
+  padding-top: 4px;
+}
+.prop-assinatura-nome {
+  font-size: 9.5pt;
+  font-weight: 700;
+  color: var(--preto);
+}
+.prop-assinatura-cargo {
+  font-size: 8.5pt;
+  color: #666;
+  margin-top: 2px;
+}
+
+/* Local e data */
+.prop-local-data {
+  text-align: right;
+  margin-top: 30px;
+  margin-bottom: 30px;
+  font-size: 10.5pt;
+  color: #555;
+}
+
+/* RODAPÉ profissional */
+.prop-rodape {
+  position: absolute;
+  bottom: 12mm;
+  left: 20mm;
+  right: 20mm;
+  border-top: 1.5px solid var(--cinza-2);
+  padding-top: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 8pt;
+  color: #777;
+}
+.prop-rodape-empresa {
+  font-weight: 600;
+  color: var(--azul);
+}
+.prop-rodape-pagina {
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   ESTILOS DE IMPRESSÃO — @media print
+═══════════════════════════════════════════════════════════════════ */
+@media print {
+  /* Esconde tudo da interface */
+  body * { visibility: hidden; }
+
+  /* Mostra só a área de impressão */
+  .viz-overlay,
+  .viz-overlay * { visibility: visible; }
+  .viz-toolbar { display: none !important; }
+
+  /* Reset do overlay */
+  .viz-overlay {
+    position: static !important;
+    background: white !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    overflow: visible !important;
+  }
+
+  /* Página A4 sem sombra */
+  .proposta-pagina {
+    margin: 0 !important;
+    box-shadow: none !important;
+    page-break-after: always;
+    width: 100%;
+    min-height: auto;
+  }
+  .proposta-pagina:last-child {
+    page-break-after: auto;
+  }
+
+  /* Mostra assinaturas (sumiram na visualização digital) */
+  .prop-assinaturas {
+    display: grid !important;
+  }
+
+  /* Garante cores na impressão */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Configuração da página */
+  @page {
+    size: A4;
+    margin: 0;
+  }
+
+  /* Esconde elementos de scroll do navegador */
+  html, body {
+    overflow: visible !important;
+    background: white !important;
+  }
+}
+
+/* Por padrão, esconde assinaturas (modo digital) */
+.prop-assinaturas {
+  display: none;
+}
+.prop-assinaturas.show {
+  display: grid;
+}
+
+/* Responsivo (visualização em mobile) */
+@media (max-width: 768px) {
+  .proposta-pagina {
+    width: 100%;
+    padding: 16px;
+    min-height: auto;
+  }
+  .prop-numero-bar {
+    margin: 0 -16px 18px;
+  }
+  .prop-condicoes {
+    grid-template-columns: 1fr;
+  }
+  .prop-assinaturas.show {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+  .viz-toolbar {
+    padding: 0 12px;
+  }
+}
+
 </style>
 </head>
 <body>
@@ -1484,6 +1993,9 @@ textarea.item-input:focus {
         <option value="aprovada">Aprovada</option>
         <option value="recusada">Recusada</option>
       </select>
+      <button onclick="abrirVisualizacao()" style="background:var(--verde);color:white;border:none;padding:8px 14px;border-radius:6px;font-size:12.5px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px;font-family:inherit;transition:all .15s;" onmouseover="this.style.background='#145520'" onmouseout="this.style.background='var(--verde)'">
+        📄 Visualizar / Imprimir
+      </button>
     </div>
   </header>
 
@@ -1948,6 +2460,156 @@ textarea.item-input:focus {
     <button class="btn-step prev" id="btnPrev" onclick="passoAnterior()">← Voltar</button>
     <button class="btn-step next" id="btnNext" onclick="passoSeguinte()">Próximo →</button>
   </footer>
+</div>
+
+<!-- ═════════════════ VISUALIZAÇÃO / IMPRESSÃO DA PROPOSTA ═════════════════ -->
+<div class="viz-overlay" id="vizOverlay">
+
+  <!-- Barra de ações (escondida na impressão) -->
+  <div class="viz-toolbar">
+    <div class="viz-toolbar-info">
+      Visualização da proposta · <span id="vizNumero">—</span>
+    </div>
+    <div class="viz-toolbar-actions">
+      <button class="btn-viz" onclick="toggleAssinaturas()" id="btnAssinaturas">
+        ✍️ Mostrar assinaturas
+      </button>
+      <button class="btn-viz primary" onclick="imprimirProposta()">
+        🖨️ Imprimir / Salvar PDF
+      </button>
+      <button class="btn-viz danger" onclick="fecharVisualizacao()">
+        ✕ Fechar
+      </button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════
+       PÁGINA ÚNICA DA PROPOSTA (renderizada dinamicamente)
+       ══════════════════════════════════════════════════════════ -->
+  <div class="proposta-pagina" id="propostaPaginaPrincipal">
+
+    <!-- Cabeçalho com logo e dados NEWPC -->
+    <div class="prop-header">
+      <img src="../assets/newpc-logo.png" alt="NEWPC" class="prop-header-logo"
+           onerror="this.style.display='none'">
+      <div class="prop-header-info">
+        <strong>NEWPC TECNOLOGIA LTDA</strong>
+        CNPJ: 20.892.343/0001-15 · IE: 28.399.396.0<br>
+        Rua Acrópole, 190 · Caranã Bosque · Campo Grande/MS · CEP 79.032-090<br>
+        Tel: (67) 3026-6571 · comercial@newpc.com.br
+      </div>
+    </div>
+
+    <!-- Faixa azul com número da proposta -->
+    <div class="prop-numero-bar">
+      <span>PROPOSTA COMERCIAL</span>
+      <span class="num" id="vizNumeroBar">—</span>
+    </div>
+
+    <!-- Título principal -->
+    <div class="prop-titulo">
+      <h1 id="vizTituloProposta">Solução Tecnológica</h1>
+      <div class="subtitle" id="vizSubtitle">Locação Mensal de Equipamentos</div>
+    </div>
+
+    <!-- Card do cliente -->
+    <div class="prop-cliente">
+      <div class="prop-cliente-label">Apresentado para</div>
+      <div class="prop-cliente-nome" id="vizClienteNome">—</div>
+      <div class="prop-cliente-info" id="vizClienteInfo">—</div>
+    </div>
+
+    <!-- DIAGNÓSTICO -->
+    <div class="prop-secao" id="vizDiagnosticoSecao">
+      <div class="prop-secao-titulo"><span class="icon">●</span> Diagnóstico e Necessidade</div>
+      <div id="vizDiagnosticoConteudo"></div>
+    </div>
+
+    <!-- SOLUÇÃO PROPOSTA -->
+    <div class="prop-secao" id="vizSolucaoSecao">
+      <div class="prop-secao-titulo"><span class="icon">●</span> Solução Proposta</div>
+      <div class="prop-secao-conteudo" id="vizSolucaoIntro" style="margin-bottom: 12px;"></div>
+
+      <table class="prop-tabela">
+        <thead>
+          <tr>
+            <th class="num">#</th>
+            <th>Item / Descrição</th>
+            <th class="qtd">Qtd</th>
+            <th class="valor">Vlr Mensal</th>
+            <th class="valor">Total Mensal</th>
+          </tr>
+        </thead>
+        <tbody id="vizItensTabela"></tbody>
+      </table>
+    </div>
+
+    <!-- INVESTIMENTO -->
+    <div class="prop-secao" id="vizInvestimentoSecao">
+      <div class="prop-secao-titulo"><span class="icon">●</span> Investimento</div>
+      <div class="prop-resumo">
+        <div class="prop-resumo-linha">
+          <span class="prop-resumo-label">Total Mensal Bruto</span>
+          <span class="prop-resumo-valor" id="vizTotalBruto">R$ 0,00</span>
+        </div>
+        <div class="prop-resumo-linha" id="vizDescontoLinha" style="display:none;">
+          <span class="prop-resumo-label">Desconto Comercial</span>
+          <span class="prop-resumo-valor" id="vizDescontoValor" style="color:var(--vermelho);">— R$ 0,00</span>
+        </div>
+        <div class="prop-resumo-linha">
+          <span class="prop-resumo-label">Valor Mensal Final</span>
+          <span class="prop-resumo-valor" id="vizMensalFinal">R$ 0,00</span>
+        </div>
+        <div class="prop-resumo-linha">
+          <span class="prop-resumo-label">Prazo do Contrato</span>
+          <span class="prop-resumo-valor" id="vizPrazo">36 meses</span>
+        </div>
+        <div class="prop-resumo-linha total">
+          <span>Total do Contrato</span>
+          <span class="prop-resumo-valor" id="vizTotalContrato">R$ 0,00</span>
+        </div>
+        <div class="prop-resumo-sub" id="vizDescontoJustif" style="display:none;"></div>
+      </div>
+    </div>
+
+    <!-- CONDIÇÕES COMERCIAIS -->
+    <div class="prop-secao" id="vizCondicoesSecao">
+      <div class="prop-secao-titulo"><span class="icon">●</span> Condições Comerciais</div>
+      <div class="prop-condicoes" id="vizCondicoesGrid"></div>
+    </div>
+
+    <!-- ENCERRAMENTO -->
+    <div class="prop-secao" id="vizEncerramentoSecao">
+      <div class="prop-secao-titulo"><span class="icon">●</span> Diferenciais NEWPC</div>
+      <div class="prop-secao-conteudo" id="vizEncerramentoConteudo"></div>
+    </div>
+
+    <!-- LOCAL E DATA -->
+    <div class="prop-local-data">
+      Campo Grande/MS, <span id="vizDataProposta">—</span>
+    </div>
+
+    <!-- ASSINATURAS (escondidas por padrão, aparecem na impressão) -->
+    <div class="prop-assinaturas" id="vizAssinaturas">
+      <div class="prop-assinatura-bloco">
+        <div class="prop-assinatura-linha"></div>
+        <div class="prop-assinatura-nome">NEWPC TECNOLOGIA LTDA</div>
+        <div class="prop-assinatura-cargo">Representante Legal</div>
+      </div>
+      <div class="prop-assinatura-bloco">
+        <div class="prop-assinatura-linha"></div>
+        <div class="prop-assinatura-nome" id="vizAssinaturaCliente">CLIENTE</div>
+        <div class="prop-assinatura-cargo" id="vizAssinaturaCargo">—</div>
+      </div>
+    </div>
+
+    <!-- RODAPÉ -->
+    <div class="prop-rodape">
+      <span class="prop-rodape-empresa">NEWPC TECNOLOGIA LTDA · CNPJ 20.892.343/0001-15</span>
+      <span class="prop-rodape-pagina">Página 1 de 1</span>
+    </div>
+  </div>
+
 </div>
 
 <!-- TOAST -->
@@ -2846,6 +3508,232 @@ window.recalcularResumo = recalcularResumo;
 window.alterarStatus = alterarStatus;
 window.autoSave = autoSave;
 window.autoResizeTextarea = autoResizeTextarea;
+
+/* ═══════════════════════════════════════════════════════════════════
+   VISUALIZAÇÃO / IMPRESSÃO DA PROPOSTA
+═══════════════════════════════════════════════════════════════════ */
+
+const MODELO_LABELS = {
+  prefeitura: 'órgão público',
+  escola: 'instituição de ensino',
+  empresa: 'empresa parceira'
+};
+
+const MODALIDADE_LABELS = {
+  pregao: 'Pregão Eletrônico',
+  dispensa: 'Dispensa de Licitação',
+  direta: 'Compra Direta',
+  adesao: 'Adesão a Ata de Registro de Preços',
+  contrato_privado: 'Contrato Privado'
+};
+
+function abrirVisualizacao() {
+  if (!propostaAtual) {
+    showToast('Nenhuma proposta carregada', 'err');
+    return;
+  }
+
+  // Lê dados atualizados do form (caso usuário tenha digitado e não salvado)
+  if (typeof lerDadosDoEditor === 'function') {
+    lerDadosDoEditor();
+    recalcularTotais();
+    recalcularResumo();
+  }
+
+  // Popula a visualização
+  popularVisualizacao(propostaAtual);
+
+  // Mostra o overlay
+  document.getElementById('vizOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function fecharVisualizacao() {
+  document.getElementById('vizOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function imprimirProposta() {
+  // Garante que assinaturas aparecem na impressão
+  document.getElementById('vizAssinaturas').classList.add('show');
+
+  // Pequeno delay pra garantir render
+  setTimeout(() => {
+    window.print();
+  }, 100);
+}
+
+function toggleAssinaturas() {
+  const ass = document.getElementById('vizAssinaturas');
+  const btn = document.getElementById('btnAssinaturas');
+  const ativo = ass.classList.toggle('show');
+  btn.innerHTML = ativo ? '🙈 Ocultar assinaturas' : '✍️ Mostrar assinaturas';
+}
+
+function popularVisualizacao(p) {
+  // Número
+  const numero = p.numero || '(sem número)';
+  setText('vizNumero', numero);
+  setText('vizNumeroBar', numero);
+
+  // Subtítulo conforme tipo
+  const subtitleMap = {
+    venda: 'Venda Direta de Equipamentos',
+    locacao_mensal: 'Locação Mensal de Equipamentos',
+    diaria: 'Locação por Período Determinado'
+  };
+  setText('vizSubtitle', subtitleMap[p.tipoComercial] || 'Solução Tecnológica');
+
+  // Cliente
+  const cliente = p.cliente || {};
+  setText('vizClienteNome', cliente.razaoSocial || '(cliente não informado)');
+
+  const infoPartes = [];
+  if (cliente.cnpj) infoPartes.push(`<strong>CNPJ:</strong> ${escHtml(cliente.cnpj)}`);
+  if (cliente.endereco) infoPartes.push(`<strong>Endereço:</strong> ${escHtml(cliente.endereco)}`);
+  if (cliente.cidade || cliente.uf) {
+    infoPartes.push(`<strong>Cidade:</strong> ${escHtml(cliente.cidade || '')}/${escHtml(cliente.uf || '')}`);
+  }
+  if (p.modalidade) infoPartes.push(`<strong>Modalidade:</strong> ${MODALIDADE_LABELS[p.modalidade] || p.modalidade}`);
+
+  document.getElementById('vizClienteInfo').innerHTML =
+    infoPartes.map(s => `<span>${s}</span>`).join('') || '—';
+
+  // Diagnóstico
+  const diag = p.diagnostico || {};
+  const diagBlocos = [];
+  if (diag.contexto) diagBlocos.push({ label: 'Contexto Atual do Cliente', texto: diag.contexto });
+  if (diag.demanda) diagBlocos.push({ label: 'Demanda Identificada', texto: diag.demanda });
+  if (diag.justificativa) diagBlocos.push({ label: 'Justificativa da Solução', texto: diag.justificativa });
+
+  const diagSecao = document.getElementById('vizDiagnosticoSecao');
+  if (diagBlocos.length === 0) {
+    diagSecao.style.display = 'none';
+  } else {
+    diagSecao.style.display = 'block';
+    document.getElementById('vizDiagnosticoConteudo').innerHTML =
+      diagBlocos.map(b => `
+        <div class="prop-diag-bloco">
+          <div class="prop-diag-label">${escHtml(b.label)}</div>
+          <div class="prop-diag-texto">${escHtml(b.texto)}</div>
+        </div>
+      `).join('');
+  }
+
+  // Solução / Itens
+  const itens = p.itens || [];
+  const solSecao = document.getElementById('vizSolucaoSecao');
+
+  if (itens.length === 0) {
+    solSecao.style.display = 'none';
+  } else {
+    solSecao.style.display = 'block';
+    document.getElementById('vizSolucaoIntro').textContent = p.solucaoIntro || '';
+
+    const tbody = document.getElementById('vizItensTabela');
+    tbody.innerHTML = itens.map((item, idx) => {
+      const total = (parseFloat(item.qtd) || 0) * (parseFloat(item.valorUnitMensal) || 0);
+      const nomeLinhas = (item.nome || '').split('\n');
+      const nomePrincipal = nomeLinhas[0] || '(sem nome)';
+      const nomeRestante = nomeLinhas.slice(1).join('\n');
+
+      return `
+        <tr>
+          <td class="num">${idx + 1}</td>
+          <td class="descricao">
+            <span class="nome">${escHtml(nomePrincipal)}</span>
+            ${nomeRestante ? escHtml(nomeRestante) : ''}
+            ${item.marca ? `<div class="marca">Marca: ${escHtml(item.marca)}</div>` : ''}
+          </td>
+          <td class="qtd">${item.qtd || 0}</td>
+          <td class="valor">${formatarMoeda(parseFloat(item.valorUnitMensal) || 0)}</td>
+          <td class="valor">${formatarMoeda(total)}</td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  // Investimento
+  setText('vizTotalBruto', formatarMoeda(p.totalMensalBruto || 0));
+  setText('vizMensalFinal', formatarMoeda(p.totalMensalFinal || 0));
+  setText('vizPrazo', `${p.prazoMeses || 36} meses`);
+  setText('vizTotalContrato', formatarMoeda(p.totalContrato || 0));
+
+  const desconto = parseFloat(p.descontoMensalValor) || 0;
+  if (desconto > 0) {
+    document.getElementById('vizDescontoLinha').style.display = 'flex';
+    setText('vizDescontoValor', '— ' + formatarMoeda(desconto));
+    if (p.descontoJustificativa) {
+      const just = document.getElementById('vizDescontoJustif');
+      just.style.display = 'block';
+      just.textContent = `Desconto concedido: ${p.descontoJustificativa}`;
+    }
+  } else {
+    document.getElementById('vizDescontoLinha').style.display = 'none';
+    document.getElementById('vizDescontoJustif').style.display = 'none';
+  }
+
+  // Condições
+  const cond = p.condicoes || {};
+  const condGrid = document.getElementById('vizCondicoesGrid');
+  const condCards = [
+    { titulo: 'Forma de Pagamento', valor: cond.pagamento },
+    { titulo: 'Prazo de Entrega', valor: cond.entrega },
+    { titulo: 'Garantia', valor: cond.garantia },
+    { titulo: 'Suporte Técnico', valor: cond.suporte }
+  ].filter(c => c.valor && c.valor.trim());
+
+  const condSecao = document.getElementById('vizCondicoesSecao');
+  if (condCards.length === 0) {
+    condSecao.style.display = 'none';
+  } else {
+    condSecao.style.display = 'block';
+    condGrid.innerHTML = condCards.map(c => `
+      <div class="prop-condicao-card">
+        <div class="prop-condicao-titulo">${escHtml(c.titulo)}</div>
+        <div class="prop-condicao-texto">${escHtml(c.valor)}</div>
+      </div>
+    `).join('');
+  }
+
+  // Encerramento
+  const enc = p.encerramento || {};
+  const encSecao = document.getElementById('vizEncerramentoSecao');
+  const encPartes = [enc.diferenciais, enc.mensagem].filter(Boolean).join('\n\n');
+  if (!encPartes) {
+    encSecao.style.display = 'none';
+  } else {
+    encSecao.style.display = 'block';
+    document.getElementById('vizEncerramentoConteudo').textContent = encPartes;
+  }
+
+  // Data formatada
+  const hoje = new Date();
+  const meses = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+  setText('vizDataProposta', `${hoje.getDate()} de ${meses[hoje.getMonth()]} de ${hoje.getFullYear()}`);
+
+  // Assinatura do cliente
+  const resp = p.responsavel || {};
+  if (resp.nome) {
+    setText('vizAssinaturaCliente', resp.nome.toUpperCase());
+    setText('vizAssinaturaCargo', resp.cargo || cliente.razaoSocial || 'Representante do Cliente');
+  } else {
+    setText('vizAssinaturaCliente', (cliente.razaoSocial || 'CLIENTE').toUpperCase());
+    setText('vizAssinaturaCargo', 'Representante Legal');
+  }
+}
+
+// Helper
+function setText(id, texto) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = texto;
+}
+
+// Expõe globalmente
+window.abrirVisualizacao = abrirVisualizacao;
+window.fecharVisualizacao = fecharVisualizacao;
+window.imprimirProposta = imprimirProposta;
+window.toggleAssinaturas = toggleAssinaturas;
 window.abrirNovaProposta = abrirNovaProposta;
 window.finalizarProposta = finalizarProposta;
 
