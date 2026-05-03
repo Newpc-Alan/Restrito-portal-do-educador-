@@ -2112,7 +2112,8 @@ textarea.item-input:focus {
             <div class="radio-card-title">LOCAÇÃO MENSAL</div>
             <div class="radio-card-desc">Mensalidades por prazo de 6 a 60 meses</div>
           </div>
-          <div class="radio-card" data-tipo="diaria" onclick="selecionarTipoComercial('diaria')">
+          <div class="radio-card" data-tipo="diaria" onclick="selecionarTipoComercial('diaria')" style="opacity:.5;cursor:not-allowed;position:relative">
+            <span style="position:absolute;top:8px;right:8px;background:var(--cinza-3);color:white;font-size:9px;font-weight:800;padding:2px 6px;border-radius:3px;letter-spacing:.8px;">EM BREVE</span>
             <div class="radio-card-icon">📆</div>
             <div class="radio-card-title">DIÁRIA</div>
             <div class="radio-card-desc">Locação por período curto (eventos, treinamentos)</div>
@@ -2120,8 +2121,7 @@ textarea.item-input:focus {
         </div>
 
         <div class="field-help" style="margin-top: 16px; padding: 12px; background: var(--ouro-soft); border-radius: 6px; color: var(--cinza-5);">
-          ℹ️ <strong>Para a Entrega 1, apenas LOCAÇÃO MENSAL está implementada.</strong>
-          Os outros tipos serão liberados na Entrega 2.
+          ℹ️ <strong>VENDA</strong> e <strong>LOCAÇÃO MENSAL</strong> estão disponíveis. Tipo <strong>DIÁRIA</strong> será liberado em breve.
         </div>
       </div>
 
@@ -2292,11 +2292,11 @@ textarea.item-input:focus {
         </div>
 
         <div class="form-section">
-          <div class="form-section-title">Itens da Proposta (Locação Mensal)</div>
+          <div class="form-section-title" id="itensSectionTitle">Itens da Proposta (Locação Mensal)</div>
 
           <div class="itens-toolbar">
             <button class="btn-add-item" onclick="adicionarItem()">+ Adicionar item</button>
-            <button class="btn-catalogo" onclick="alert('Catálogo virá na Entrega 3')" disabled style="opacity:.5;cursor:not-allowed;">📚 Catálogo NEWPC (Entrega 3)</button>
+            <button class="btn-catalogo" onclick="alert('Catálogo virá em sessão futura')" disabled style="opacity:.5;cursor:not-allowed;">📚 Catálogo NEWPC (em breve)</button>
           </div>
 
           <div class="itens-table" id="itensTableContainer">
@@ -2305,8 +2305,8 @@ textarea.item-input:focus {
               <div>Item / Descrição</div>
               <div>Marca</div>
               <div>Qtd</div>
-              <div>Vlr Mensal Unit.</div>
-              <div>Total Mensal</div>
+              <div id="itensColValorLabel">Vlr Mensal Unit.</div>
+              <div id="itensColTotalLabel">Total Mensal</div>
               <div></div>
             </div>
             <div class="itens-table-body" id="itensTableBody">
@@ -2320,12 +2320,15 @@ textarea.item-input:focus {
       <div class="step-panel" data-step="5">
         <div class="step-panel-header">
           <div class="step-panel-title">⑤ Resumo Financeiro</div>
-          <div class="step-panel-subtitle">
+          <div class="step-panel-subtitle" id="step5Subtitle">
             Defina o prazo do contrato, o desconto comercial (manual) e veja o valor total final da proposta.
           </div>
         </div>
 
-        <div class="form-section">
+        <!-- ═══════════════════════════════════════════════════
+             BLOCO ESPECÍFICO: LOCAÇÃO MENSAL (prazo)
+        ═══════════════════════════════════════════════════ -->
+        <div class="form-section" id="bloco-prazo-mensal">
           <div class="form-section-title">Prazo Contratual</div>
           <div class="prazo-grid" id="prazoGrid">
             <div class="prazo-card" data-prazo="6" onclick="selecionarPrazo(6)">
@@ -2356,11 +2359,52 @@ textarea.item-input:focus {
           <div class="field-help">Prazo padrão da NEWPC: <strong>36 meses</strong>. Alterações de prazo impactam diretamente o valor final do contrato.</div>
         </div>
 
+        <!-- ═══════════════════════════════════════════════════
+             BLOCO ESPECÍFICO: VENDA (forma de pagamento)
+        ═══════════════════════════════════════════════════ -->
+        <div class="form-section" id="bloco-pagamento-venda" style="display:none;">
+          <div class="form-section-title">Forma de Pagamento</div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;">
+            <div class="radio-card" data-formapag="avista" onclick="selecionarFormaPagamento('avista')" style="text-align:center;cursor:pointer;">
+              <div style="font-size:24px;margin-bottom:6px;">💵</div>
+              <div style="font-weight:700;font-size:13px;color:var(--azul);">À VISTA</div>
+              <div style="font-size:11px;color:var(--cinza-4);margin-top:2px;">Pagamento único</div>
+            </div>
+            <div class="radio-card" data-formapag="parcelado" onclick="selecionarFormaPagamento('parcelado')" style="text-align:center;cursor:pointer;">
+              <div style="font-size:24px;margin-bottom:6px;">📊</div>
+              <div style="font-weight:700;font-size:13px;color:var(--azul);">PARCELADO</div>
+              <div style="font-size:11px;color:var(--cinza-4);margin-top:2px;">Em várias parcelas</div>
+            </div>
+          </div>
+
+          <!-- Campos de parcelamento (aparecem só se parcelado) -->
+          <div id="bloco-parcelas" style="display:none;margin-top:12px;">
+            <div class="form-grid" style="grid-template-columns: 1fr 2fr;gap:12px;">
+              <div class="field">
+                <label class="field-label">Número de Parcelas</label>
+                <input type="number" class="field-input" id="numParcelas" min="2" max="36" value="3"
+                       oninput="atualizarParcelas();autoSave()">
+              </div>
+              <div class="field">
+                <label class="field-label">Condições de Pagamento</label>
+                <input type="text" class="field-input" id="condicoesParcelamento"
+                       placeholder="Ex: 30/60/90 dias, ou primeira no boleto e demais em cartão"
+                       oninput="autoSave()">
+              </div>
+            </div>
+            <div class="field-help" id="parcelasInfo">3 parcelas</div>
+          </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════════
+             BLOCO COMUM: DESCONTO E TOTAIS
+        ═══════════════════════════════════════════════════ -->
         <div class="form-section">
           <div class="form-section-title">Desconto Comercial</div>
           <div class="valores-resumo">
             <div class="valores-linha">
-              <span class="valores-linha-label">Total Mensal Bruto</span>
+              <span class="valores-linha-label" id="labelTotalBruto">Total Mensal Bruto</span>
               <span class="valores-linha-valor" id="resTotalMensalBruto">R$ 0,00</span>
             </div>
             <div class="valores-linha">
@@ -2368,7 +2412,7 @@ textarea.item-input:focus {
               <span style="display:flex; align-items:center; gap:6px;">
                 <input type="number" class="valores-linha-input" id="descontoMensalValor" min="0" step="0.01"
                        value="0" oninput="recalcularResumo();autoSave()">
-                <span style="font-size:11px; color:var(--cinza-4);">R$/mês</span>
+                <span style="font-size:11px; color:var(--cinza-4);" id="descontoUnidade">R$/mês</span>
               </span>
             </div>
             <div class="field" style="margin-top:8px;">
@@ -2380,16 +2424,16 @@ textarea.item-input:focus {
             <div class="valores-divider"></div>
 
             <div class="valores-linha">
-              <span class="valores-linha-label">Total Mensal Final</span>
+              <span class="valores-linha-label" id="labelTotalFinal">Total Mensal Final</span>
               <span class="valores-linha-valor" id="resTotalMensalFinal">R$ 0,00</span>
             </div>
-            <div class="valores-linha">
+            <div class="valores-linha" id="linhaPrazo">
               <span class="valores-linha-label">Prazo do Contrato</span>
               <span class="valores-linha-valor" id="resPrazo">36 meses</span>
             </div>
 
             <div class="valores-total">
-              <span class="valores-total-label">Total do Contrato</span>
+              <span class="valores-total-label" id="labelTotalContrato">Total do Contrato</span>
               <span class="valores-total-valor" id="resTotalContrato">R$ 0,00</span>
             </div>
           </div>
@@ -2550,8 +2594,8 @@ textarea.item-input:focus {
             <th class="num">#</th>
             <th>Item / Descrição</th>
             <th class="qtd">Qtd</th>
-            <th class="valor">Vlr Mensal</th>
-            <th class="valor">Total Mensal</th>
+            <th class="valor" id="vizColValor">Vlr Mensal</th>
+            <th class="valor" id="vizColTotal">Total Mensal</th>
           </tr>
         </thead>
         <tbody id="vizItensTabela"></tbody>
@@ -2563,7 +2607,7 @@ textarea.item-input:focus {
       <div class="prop-secao-titulo"><span class="icon">●</span> Investimento</div>
       <div class="prop-resumo">
         <div class="prop-resumo-linha">
-          <span class="prop-resumo-label">Total Mensal Bruto</span>
+          <span class="prop-resumo-label" id="vizLabelBruto">Total Mensal Bruto</span>
           <span class="prop-resumo-valor" id="vizTotalBruto">R$ 0,00</span>
         </div>
         <div class="prop-resumo-linha" id="vizDescontoLinha" style="display:none;">
@@ -2571,16 +2615,21 @@ textarea.item-input:focus {
           <span class="prop-resumo-valor" id="vizDescontoValor" style="color:var(--vermelho);">— R$ 0,00</span>
         </div>
         <div class="prop-resumo-linha">
-          <span class="prop-resumo-label">Valor Mensal Final</span>
+          <span class="prop-resumo-label" id="vizLabelFinal">Valor Mensal Final</span>
           <span class="prop-resumo-valor" id="vizMensalFinal">R$ 0,00</span>
         </div>
-        <div class="prop-resumo-linha">
+        <div class="prop-resumo-linha" id="vizLinhaPrazo">
           <span class="prop-resumo-label">Prazo do Contrato</span>
           <span class="prop-resumo-valor" id="vizPrazo">36 meses</span>
         </div>
         <div class="prop-resumo-linha total">
-          <span>Total do Contrato</span>
+          <span id="vizLabelTotal">Total do Contrato</span>
           <span class="prop-resumo-valor" id="vizTotalContrato">R$ 0,00</span>
+        </div>
+        <!-- Forma de pagamento (só em VENDA) -->
+        <div class="prop-resumo-linha" id="vizLinhaFormaPag" style="display:none; border-top: 1px dashed var(--cinza-3); margin-top: 8px; padding-top: 10px;">
+          <span class="prop-resumo-label">Forma de Pagamento</span>
+          <span class="prop-resumo-valor" id="vizFormaPag" style="font-family: 'Outfit', sans-serif; font-size: 10pt;">À vista</span>
         </div>
         <div class="prop-resumo-sub" id="vizDescontoJustif" style="display:none;"></div>
       </div>
@@ -3121,6 +3170,10 @@ function carregarDadosNoEditor() {
   setVal('descontoMensalValor', p.descontoMensalValor || 0);
   setVal('descontoJustificativa', p.descontoJustificativa);
 
+  // Campos específicos VENDA
+  setVal('numParcelas', p.numParcelas || 3);
+  setVal('condicoesParcelamento', p.condicoesParcelamento);
+
   // Condições
   setVal('cond-pagamento', p.condicoes?.pagamento);
   setVal('cond-entrega', p.condicoes?.entrega);
@@ -3131,6 +3184,9 @@ function carregarDadosNoEditor() {
   // Encerramento
   setVal('enc-diferenciais', p.encerramento?.diferenciais);
   setVal('enc-mensagem', p.encerramento?.mensagem);
+
+  // Renderiza Step 5 conforme tipo (mostra blocos certos)
+  if (typeof renderResumoFinanceiro === 'function') renderResumoFinanceiro();
 
   recalcularResumo();
 }
@@ -3165,6 +3221,14 @@ function lerDadosDoEditor() {
   p.solucaoIntro = getVal('sol-intro');
   p.descontoMensalValor = parseFloat(getVal('descontoMensalValor')) || 0;
   p.descontoJustificativa = getVal('descontoJustificativa');
+
+  // Campos específicos de VENDA
+  if (p.tipoComercial === 'venda') {
+    p.numParcelas = parseInt(getVal('numParcelas')) || 1;
+    p.condicoesParcelamento = getVal('condicoesParcelamento');
+    // formaPagamento já é setado pela função selecionarFormaPagamento
+  }
+
   p.condicoes = {
     pagamento: getVal('cond-pagamento'),
     entrega: getVal('cond-entrega'),
@@ -3187,15 +3251,23 @@ function getVal(id) {
    AÇÕES DE SELEÇÃO (radio cards)
 ═══════════════════════════════════════════════ */
 function selecionarTipoComercial(tipo) {
-  // Por enquanto só locação mensal está habilitada
-  if (tipo !== 'locacao_mensal') {
-    showToast('Apenas Locação Mensal está disponível na Entrega 1', '');
+  // Tipos disponíveis: venda, locacao_mensal (DIÁRIA virá em sessão futura)
+  if (tipo === 'diaria') {
+    showToast('Tipo Diária será liberado em breve', '');
     return;
   }
   propostaAtual.tipoComercial = tipo;
   document.querySelectorAll('.radio-card[data-tipo]').forEach(c => {
     c.classList.toggle('selected', c.dataset.tipo === tipo);
   });
+
+  // Re-renderiza itens (colunas mudam conforme tipo)
+  if (typeof renderItens === 'function') renderItens();
+  // Recalcula totais
+  if (typeof recalcularTotais === 'function') recalcularTotais();
+  // Re-renderiza Step 5 (Resumo) que muda conforme tipo
+  if (typeof renderResumoFinanceiro === 'function') renderResumoFinanceiro();
+
   autoSave();
 }
 
@@ -3225,14 +3297,159 @@ function selecionarPrazo(meses, save = true) {
 }
 
 /* ═══════════════════════════════════════════════
+   FORMA DE PAGAMENTO (VENDA)
+═══════════════════════════════════════════════ */
+function selecionarFormaPagamento(forma) {
+  propostaAtual.formaPagamento = forma;
+  document.querySelectorAll('.radio-card[data-formapag]').forEach(c => {
+    c.classList.toggle('selected', c.dataset.formapag === forma);
+  });
+
+  // Mostra/esconde campos de parcelamento
+  const blocoParcelas = document.getElementById('bloco-parcelas');
+  if (blocoParcelas) {
+    blocoParcelas.style.display = (forma === 'parcelado') ? 'block' : 'none';
+  }
+
+  atualizarParcelas();
+  autoSave();
+}
+
+function atualizarParcelas() {
+  const num = parseInt(getVal('numParcelas')) || 1;
+  propostaAtual.numParcelas = num;
+
+  const info = document.getElementById('parcelasInfo');
+  if (info && propostaAtual.formaPagamento === 'parcelado') {
+    const valorPorParcela = (propostaAtual.totalContrato || 0) / num;
+    info.innerHTML = `${num} parcelas de <strong>${formatarMoeda(valorPorParcela)}</strong>`;
+  }
+}
+
+/* ═══════════════════════════════════════════════
+   RENDER RESUMO FINANCEIRO
+   Mostra/esconde blocos conforme tipo comercial
+═══════════════════════════════════════════════ */
+function renderResumoFinanceiro() {
+  const tipo = propostaAtual.tipoComercial || 'locacao_mensal';
+  const cfg = getTipoConfig(tipo);
+
+  // Subtítulo
+  const subtitle = document.getElementById('step5Subtitle');
+  if (subtitle) {
+    if (tipo === 'venda') {
+      subtitle.textContent = 'Defina forma de pagamento (à vista ou parcelado), desconto e veja o valor total da venda.';
+    } else if (tipo === 'locacao_mensal') {
+      subtitle.textContent = 'Defina o prazo do contrato, o desconto comercial (manual) e veja o valor total final da proposta.';
+    } else if (tipo === 'diaria') {
+      subtitle.textContent = 'Defina o período do evento, desconto e veja o valor total.';
+    }
+  }
+
+  // Mostra/esconde blocos específicos
+  const blocoMensal = document.getElementById('bloco-prazo-mensal');
+  const blocoVenda = document.getElementById('bloco-pagamento-venda');
+
+  if (blocoMensal) blocoMensal.style.display = (tipo === 'locacao_mensal') ? 'block' : 'none';
+  if (blocoVenda) blocoVenda.style.display = (tipo === 'venda') ? 'block' : 'none';
+
+  // Esconde linha de prazo se não for locação mensal
+  const linhaPrazo = document.getElementById('linhaPrazo');
+  if (linhaPrazo) linhaPrazo.style.display = (tipo === 'locacao_mensal') ? 'flex' : 'none';
+
+  // Atualiza labels
+  const labelBruto = document.getElementById('labelTotalBruto');
+  const labelFinal = document.getElementById('labelTotalFinal');
+  const labelTotalContrato = document.getElementById('labelTotalContrato');
+  const descontoUnidade = document.getElementById('descontoUnidade');
+
+  if (labelBruto) labelBruto.textContent = cfg.labelTotalBruto;
+  if (labelFinal) labelFinal.textContent = cfg.labelTotalFinal;
+
+  if (tipo === 'venda') {
+    if (labelTotalContrato) labelTotalContrato.textContent = 'Valor Total da Venda';
+    if (descontoUnidade) descontoUnidade.textContent = 'R$';
+  } else if (tipo === 'locacao_mensal') {
+    if (labelTotalContrato) labelTotalContrato.textContent = 'Total do Contrato';
+    if (descontoUnidade) descontoUnidade.textContent = 'R$/mês';
+  } else if (tipo === 'diaria') {
+    if (labelTotalContrato) labelTotalContrato.textContent = 'Valor Total do Evento';
+    if (descontoUnidade) descontoUnidade.textContent = 'R$/dia';
+  }
+
+  // Restaura seleção de forma de pagamento (se for venda)
+  if (tipo === 'venda' && propostaAtual.formaPagamento) {
+    document.querySelectorAll('.radio-card[data-formapag]').forEach(c => {
+      c.classList.toggle('selected', c.dataset.formapag === propostaAtual.formaPagamento);
+    });
+    const blocoParcelas = document.getElementById('bloco-parcelas');
+    if (blocoParcelas) {
+      blocoParcelas.style.display = (propostaAtual.formaPagamento === 'parcelado') ? 'block' : 'none';
+    }
+  }
+
+  // Atualiza valores
+  recalcularResumo();
+}
+
+/* ═══════════════════════════════════════════════
    ITENS — Adicionar, remover, recalcular
 ═══════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════
+   CONFIGURAÇÃO POR TIPO COMERCIAL
+   Cada tipo tem labels e cálculos diferentes
+═══════════════════════════════════════════════ */
+function getTipoConfig(tipo) {
+  const configs = {
+    venda: {
+      tituloSecao: 'Itens da Proposta (Venda)',
+      colValorLabel: 'Vlr Unitário',
+      colTotalLabel: 'Total',
+      itemValorPlaceholder: 'Vlr Unitário',
+      tituloResumo: 'Resumo Financeiro',
+      labelTotalBruto: 'Valor Total Bruto',
+      labelTotalFinal: 'Valor Total Final',
+      labelDesconto: 'Desconto Comercial',
+      mostraTotalContrato: false,
+      mostraPrazo: false,
+      mostraFormaPagamento: true
+    },
+    locacao_mensal: {
+      tituloSecao: 'Itens da Proposta (Locação Mensal)',
+      colValorLabel: 'Vlr Mensal Unit.',
+      colTotalLabel: 'Total Mensal',
+      itemValorPlaceholder: 'Vlr Mensal Unit.',
+      tituloResumo: 'Resumo Financeiro',
+      labelTotalBruto: 'Total Mensal Bruto',
+      labelTotalFinal: 'Total Mensal Final',
+      labelDesconto: 'Desconto Mensal',
+      mostraTotalContrato: true,
+      mostraPrazo: true,
+      mostraFormaPagamento: false
+    },
+    diaria: {
+      tituloSecao: 'Itens da Proposta (Diária)',
+      colValorLabel: 'Vlr Diária Unit.',
+      colTotalLabel: 'Total Diário',
+      itemValorPlaceholder: 'Vlr Diária Unit.',
+      tituloResumo: 'Resumo do Evento',
+      labelTotalBruto: 'Total Diário Bruto',
+      labelTotalFinal: 'Total Diário Final',
+      labelDesconto: 'Desconto',
+      mostraTotalContrato: false,
+      mostraPrazo: false,
+      mostraDias: true
+    }
+  };
+  return configs[tipo] || configs.locacao_mensal;
+}
+
 function adicionarItem() {
   propostaAtual.itens.push({
     nome: '',
     marca: '',
     qtd: 1,
-    valorUnitMensal: 0,
+    valorUnitMensal: 0,    // mantido por compatibilidade — usado como "valor unitário" pros 3 tipos
     totalMensal: 0
   });
   renderItens();
@@ -3260,44 +3477,81 @@ function atualizarItem(idx, campo, valor) {
 }
 
 function recalcularTotais() {
-  let totalMensal = 0;
+  let totalBruto = 0;
   propostaAtual.itens.forEach(item => {
     item.totalMensal = (parseFloat(item.qtd) || 0) * (parseFloat(item.valorUnitMensal) || 0);
-    totalMensal += item.totalMensal;
+    totalBruto += item.totalMensal;
   });
-  propostaAtual.totalMensalBruto = totalMensal;
+  propostaAtual.totalMensalBruto = totalBruto;
   recalcularResumo();
+
   // Atualiza display dos totais por linha
   propostaAtual.itens.forEach((item, idx) => {
     const cell = document.getElementById(`item-total-${idx}`);
     if (cell) cell.textContent = formatarMoeda(item.totalMensal);
   });
+
+  // Atualiza labels da tabela conforme tipo
+  const cfg = getTipoConfig(propostaAtual.tipoComercial || 'locacao_mensal');
+  const tituloSecao = document.getElementById('itensSectionTitle');
+  if (tituloSecao) tituloSecao.textContent = cfg.tituloSecao;
+  const colValor = document.getElementById('itensColValorLabel');
+  if (colValor) colValor.textContent = cfg.colValorLabel;
+  const colTotal = document.getElementById('itensColTotalLabel');
+  if (colTotal) colTotal.textContent = cfg.colTotalLabel;
 }
 
 function recalcularResumo() {
+  const tipo = propostaAtual.tipoComercial || 'locacao_mensal';
   const bruto = propostaAtual.totalMensalBruto || 0;
   const desconto = parseFloat(getVal('descontoMensalValor')) || 0;
   const final = Math.max(0, bruto - desconto);
-  const prazo = propostaAtual.prazoMeses || 36;
-  const totalContrato = final * prazo;
 
   propostaAtual.descontoMensalValor = desconto;
   propostaAtual.totalMensalFinal = final;
-  propostaAtual.totalContrato = totalContrato;
 
+  // Cálculo final depende do tipo
+  if (tipo === 'locacao_mensal') {
+    const prazo = propostaAtual.prazoMeses || 36;
+    propostaAtual.totalContrato = final * prazo;
+  } else if (tipo === 'venda') {
+    propostaAtual.totalContrato = final;  // Venda: total = valor final (sem multiplicar)
+  } else if (tipo === 'diaria') {
+    const dias = parseInt(propostaAtual.qtdDias) || 1;
+    propostaAtual.totalContrato = final * dias;  // Diária: × número de dias
+  }
+
+  // Atualiza UI
   const elBruto = document.getElementById('resTotalMensalBruto');
   const elFinal = document.getElementById('resTotalMensalFinal');
   const elPrazo = document.getElementById('resPrazo');
   const elTotal = document.getElementById('resTotalContrato');
   if (elBruto) elBruto.textContent = formatarMoeda(bruto);
   if (elFinal) elFinal.textContent = formatarMoeda(final);
-  if (elPrazo) elPrazo.textContent = prazo + ' meses';
-  if (elTotal) elTotal.textContent = formatarMoeda(totalContrato);
+
+  if (tipo === 'locacao_mensal') {
+    const prazo = propostaAtual.prazoMeses || 36;
+    if (elPrazo) elPrazo.textContent = prazo + ' meses';
+  } else if (tipo === 'diaria') {
+    const dias = parseInt(propostaAtual.qtdDias) || 1;
+    if (elPrazo) elPrazo.textContent = dias + (dias === 1 ? ' dia' : ' dias');
+  }
+
+  if (elTotal) elTotal.textContent = formatarMoeda(propostaAtual.totalContrato);
 }
 
 function renderItens() {
   const container = document.getElementById('itensTableBody');
   if (!container) return;
+
+  // Atualiza labels da tabela conforme tipo
+  const cfg = getTipoConfig(propostaAtual.tipoComercial || 'locacao_mensal');
+  const tituloSecao = document.getElementById('itensSectionTitle');
+  if (tituloSecao) tituloSecao.textContent = cfg.tituloSecao;
+  const colValor = document.getElementById('itensColValorLabel');
+  if (colValor) colValor.textContent = cfg.colValorLabel;
+  const colTotal = document.getElementById('itensColTotalLabel');
+  if (colTotal) colTotal.textContent = cfg.colTotalLabel;
 
   if (propostaAtual.itens.length === 0) {
     container.innerHTML = `
@@ -3659,12 +3913,75 @@ function popularVisualizacao(p) {
     }).join('');
   }
 
-  // Investimento
+  // ═══ INVESTIMENTO — adaptativo por tipo comercial ═══
+  const tipoComercial = p.tipoComercial || 'locacao_mensal';
+  const cfgViz = (typeof getTipoConfig === 'function') ? getTipoConfig(tipoComercial) : null;
+
+  // Atualiza labels da tabela (cabeçalho)
+  if (cfgViz) {
+    const colValor = document.getElementById('vizColValor');
+    const colTotal = document.getElementById('vizColTotal');
+    if (colValor) colValor.textContent = cfgViz.colValorLabel;
+    if (colTotal) colTotal.textContent = cfgViz.colTotalLabel;
+  }
+
+  // Labels do bloco Investimento
+  if (cfgViz) {
+    const labelBruto = document.getElementById('vizLabelBruto');
+    const labelFinal = document.getElementById('vizLabelFinal');
+    const labelTotal = document.getElementById('vizLabelTotal');
+
+    if (labelBruto) labelBruto.textContent = cfgViz.labelTotalBruto;
+    if (labelFinal) labelFinal.textContent = cfgViz.labelTotalFinal;
+
+    if (tipoComercial === 'venda') {
+      if (labelTotal) labelTotal.textContent = 'Valor Total da Venda';
+    } else if (tipoComercial === 'diaria') {
+      if (labelTotal) labelTotal.textContent = 'Valor Total do Evento';
+    } else {
+      if (labelTotal) labelTotal.textContent = 'Total do Contrato';
+    }
+  }
+
+  // Mostra/esconde linha de prazo (só em locação mensal)
+  const linhaPrazo = document.getElementById('vizLinhaPrazo');
+  if (linhaPrazo) {
+    linhaPrazo.style.display = (tipoComercial === 'locacao_mensal') ? 'flex' : 'none';
+  }
+
+  // Valores
   setText('vizTotalBruto', formatarMoeda(p.totalMensalBruto || 0));
   setText('vizMensalFinal', formatarMoeda(p.totalMensalFinal || 0));
-  setText('vizPrazo', `${p.prazoMeses || 36} meses`);
+
+  if (tipoComercial === 'locacao_mensal') {
+    setText('vizPrazo', `${p.prazoMeses || 36} meses`);
+  }
+
   setText('vizTotalContrato', formatarMoeda(p.totalContrato || 0));
 
+  // Forma de pagamento (só VENDA)
+  const linhaFormaPag = document.getElementById('vizLinhaFormaPag');
+  if (linhaFormaPag) {
+    if (tipoComercial === 'venda' && p.formaPagamento) {
+      linhaFormaPag.style.display = 'flex';
+      let formaPagTexto = '';
+      if (p.formaPagamento === 'avista') {
+        formaPagTexto = 'À vista';
+      } else if (p.formaPagamento === 'parcelado') {
+        const num = p.numParcelas || 2;
+        const valorParcela = (p.totalContrato || 0) / num;
+        formaPagTexto = `${num}× de ${formatarMoeda(valorParcela)}`;
+        if (p.condicoesParcelamento) {
+          formaPagTexto += ` (${escHtml(p.condicoesParcelamento)})`;
+        }
+      }
+      document.getElementById('vizFormaPag').innerHTML = formaPagTexto;
+    } else {
+      linhaFormaPag.style.display = 'none';
+    }
+  }
+
+  // Desconto (comum a todos)
   const desconto = parseFloat(p.descontoMensalValor) || 0;
   if (desconto > 0) {
     document.getElementById('vizDescontoLinha').style.display = 'flex';
@@ -3741,6 +4058,10 @@ window.imprimirProposta = imprimirProposta;
 window.toggleAssinaturas = toggleAssinaturas;
 window.abrirNovaProposta = abrirNovaProposta;
 window.finalizarProposta = finalizarProposta;
+window.selecionarFormaPagamento = selecionarFormaPagamento;
+window.atualizarParcelas = atualizarParcelas;
+window.renderResumoFinanceiro = renderResumoFinanceiro;
+window.getTipoConfig = getTipoConfig;
 
 /* ═══════════════════════════════════════════════
    UTILS
