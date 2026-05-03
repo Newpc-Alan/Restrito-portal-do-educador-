@@ -3684,8 +3684,7 @@ function popularVisualizacao(p) {
   const meses = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
   setText('vizDataProposta', `${hoje.getDate()} de ${meses[hoje.getMonth()]} de ${hoje.getFullYear()}`);
 
-  // Assinatura do cliente
-  const resp = p.responsavel || {};
+  // Assinatura do cliente (resp já foi declarado antes na seção "Aos cuidados de")
   if (resp.nome) {
     setText('vizAssinaturaCliente', resp.nome.toUpperCase());
     setText('vizAssinaturaCargo', resp.cargo || cliente.razaoSocial || 'Representante do Cliente');
