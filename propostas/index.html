@@ -1733,12 +1733,9 @@ textarea.item-input:focus {
 
 /* RODAPÉ profissional */
 .prop-rodape {
-  position: absolute;
-  bottom: 12mm;
-  left: 20mm;
-  right: 20mm;
-  border-top: 1.5px solid var(--cinza-2);
+  margin-top: 30px;
   padding-top: 8px;
+  border-top: 1.5px solid var(--cinza-2);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -1755,60 +1752,97 @@ textarea.item-input:focus {
 
 /* ═══════════════════════════════════════════════════════════════════
    ESTILOS DE IMPRESSÃO — @media print
+   Técnica: esconde TUDO via display:none, mostra só o conteúdo da proposta
 ═══════════════════════════════════════════════════════════════════ */
 @media print {
-  /* Esconde tudo da interface */
-  body * { visibility: hidden; }
+  /* 1. ESCONDE tudo do app principal */
+  body > * {
+    display: none !important;
+  }
 
-  /* Mostra só a área de impressão */
-  .viz-overlay,
-  .viz-overlay * { visibility: visible; }
-  .viz-toolbar { display: none !important; }
-
-  /* Reset do overlay */
-  .viz-overlay {
+  /* 2. MOSTRA somente o overlay de visualização */
+  body > .viz-overlay {
+    display: block !important;
     position: static !important;
     background: white !important;
     padding: 0 !important;
     margin: 0 !important;
     overflow: visible !important;
+    inset: auto !important;
+    height: auto !important;
+    min-height: auto !important;
   }
 
-  /* Página A4 sem sombra */
+  /* 3. ESCONDE a barra de botões */
+  .viz-toolbar {
+    display: none !important;
+  }
+
+  /* 4. PÁGINA A4 sem sombra/margem */
   .proposta-pagina {
     margin: 0 !important;
+    padding: 12mm 14mm !important;
     box-shadow: none !important;
-    page-break-after: auto;
-    page-break-inside: auto;
-    width: 100%;
-    min-height: auto;
-    max-height: none;
-  }
-  .proposta-pagina:last-child {
-    page-break-after: auto;
+    width: 100% !important;
+    min-height: auto !important;
+    max-height: none !important;
+    page-break-after: auto !important;
+    page-break-before: avoid !important;
+    background: white !important;
   }
 
-  /* Mostra assinaturas (sumiram na visualização digital) */
+  /* 5. EVITAR QUEBRAS RUINS (regra crítica!) */
+  .prop-header,
+  .prop-numero-bar,
+  .prop-cliente,
+  .prop-resumo,
+  .prop-condicao-card,
+  .prop-diag-bloco,
+  .prop-tabela,
+  .prop-tabela tr,
+  .prop-assinaturas,
+  .prop-rodape {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  /* 6. Manter título da seção JUNTO com primeiro conteúdo */
+  .prop-secao-titulo {
+    page-break-after: avoid !important;
+    break-after: avoid !important;
+  }
+
+  /* 7. Seções tentam não quebrar (mas se for muito grande, deixam) */
+  .prop-secao {
+    page-break-inside: auto;
+  }
+
+  /* 8. Mostra assinaturas automaticamente */
   .prop-assinaturas {
     display: grid !important;
+    margin-top: 40px !important;
   }
 
-  /* Garante cores na impressão */
+  /* 9. Cores exatas (não converter pra cinza) */
   * {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
+    color-adjust: exact !important;
   }
 
-  /* Configuração da página */
+  /* 10. Configuração da página A4 */
   @page {
     size: A4;
-    margin: 0;
+    margin: 12mm;
   }
 
-  /* Esconde elementos de scroll do navegador */
+  /* 11. Reset de overflow */
   html, body {
     overflow: visible !important;
     background: white !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    height: auto !important;
   }
 }
 
