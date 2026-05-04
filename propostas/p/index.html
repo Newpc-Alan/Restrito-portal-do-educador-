@@ -1,0 +1,1230 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Proposta Comercial — NEWPC</title>
+<link rel="icon" type="image/png" href="../../assets/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --azul: #0f2c4a;
+  --azul-soft: #e8f1fa;
+  --azul-med: #1b4876;
+  --verde: #1a6b2a;
+  --verde-vivo: #28a745;
+  --verde-soft: #e9f5ec;
+  --vermelho: #c63b3b;
+  --vermelho-soft: #fce8e8;
+  --cinza-1: #f7f8fa;
+  --cinza-2: #e6e9ee;
+  --cinza-3: #c4cad3;
+  --cinza-4: #8a93a0;
+  --cinza-5: #4a5260;
+  --preto: #1a1f29;
+  --r: 8px;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,.06);
+  --shadow: 0 4px 12px rgba(0,0,0,.08);
+  --shadow-lg: 0 12px 36px rgba(0,0,0,.15);
+  --tr: all .2s ease;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Outfit', sans-serif;
+  background: var(--cinza-1);
+  color: var(--preto);
+  font-size: 14px;
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+/* TELA DE LOADING */
+.loading-screen {
+  position: fixed;
+  inset: 0;
+  background: white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 22px;
+  z-index: 999;
+}
+.loading-screen.hidden { display: none; }
+.loading-spinner {
+  width: 44px;
+  height: 44px;
+  border: 4px solid var(--cinza-2);
+  border-top-color: var(--verde-vivo);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-msg { color: var(--cinza-4); font-size: 13px; }
+
+/* TELA DE ERRO */
+.error-screen {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: white;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  padding: 30px;
+  text-align: center;
+  z-index: 998;
+}
+.error-screen.show { display: flex; }
+.error-icon { font-size: 64px; }
+.error-title { font-size: 22px; font-weight: 800; color: var(--azul); }
+.error-msg { color: var(--cinza-5); max-width: 480px; line-height: 1.6; }
+.error-logo {
+  margin-top: 30px;
+  height: 30px;
+  opacity: .5;
+}
+
+/* HEADER */
+.header {
+  background: var(--azul);
+  color: white;
+  padding: 18px 0;
+  border-bottom: 4px solid var(--verde-vivo);
+}
+.header-content {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+.header-logo {
+  background: white;
+  padding: 8px 16px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+}
+.header-logo img { height: 28px; }
+.header-info {
+  text-align: right;
+  font-size: 11px;
+  color: rgba(255,255,255,.85);
+  line-height: 1.5;
+}
+.header-info strong { color: white; font-weight: 700; }
+
+/* CONTEÚDO PRINCIPAL */
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 30px 24px 40px;
+}
+
+/* CARD DE STATUS — em cima de tudo */
+.status-card {
+  background: white;
+  border-radius: var(--r);
+  padding: 18px 22px;
+  margin-bottom: 18px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.status-card.aceita {
+  background: var(--verde-soft);
+  border-left: 4px solid var(--verde-vivo);
+}
+.status-card.recusada {
+  background: var(--vermelho-soft);
+  border-left: 4px solid var(--vermelho);
+}
+.status-card.expirada {
+  background: #fff8e8;
+  border-left: 4px solid #b8860b;
+}
+.status-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+}
+.status-icon { font-size: 28px; flex-shrink: 0; }
+.status-texto { font-size: 13px; color: var(--cinza-5); }
+.status-texto strong { color: var(--preto); display: block; font-size: 15px; margin-bottom: 2px; }
+.status-numero {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--cinza-4);
+  white-space: nowrap;
+}
+
+/* PROPOSTA — caixa principal */
+.proposta-card {
+  background: white;
+  border-radius: var(--r);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  margin-bottom: 24px;
+}
+
+.proposta-header {
+  background: linear-gradient(135deg, var(--azul) 0%, var(--azul-med) 100%);
+  color: white;
+  padding: 24px;
+  text-align: center;
+}
+.proposta-header h1 {
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  opacity: .9;
+  margin-bottom: 4px;
+}
+.proposta-numero {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: 2px;
+}
+
+.proposta-conteudo { padding: 24px; }
+
+/* SEÇÕES */
+.secao {
+  margin-bottom: 22px;
+  padding-bottom: 22px;
+  border-bottom: 1px solid var(--cinza-2);
+}
+.secao:last-child { border-bottom: none; }
+
+.secao-titulo {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: var(--azul);
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.secao-titulo::before {
+  content: '';
+  width: 4px;
+  height: 14px;
+  background: var(--verde-vivo);
+  border-radius: 2px;
+}
+
+/* CLIENTE */
+.cliente-nome {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--preto);
+  margin-bottom: 8px;
+}
+.cliente-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 13px;
+  color: var(--cinza-5);
+}
+.cliente-info span { display: block; }
+.cliente-info strong { color: var(--preto); }
+
+/* DIAGNÓSTICO */
+.diag-bloco {
+  margin-bottom: 12px;
+}
+.diag-bloco:last-child { margin-bottom: 0; }
+.diag-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--cinza-5);
+  text-transform: uppercase;
+  letter-spacing: .8px;
+  margin-bottom: 4px;
+}
+.diag-texto {
+  font-size: 13px;
+  color: var(--preto);
+  line-height: 1.6;
+}
+
+/* TABELA DE ITENS */
+.tabela-itens {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  margin-top: 10px;
+}
+.tabela-itens th {
+  background: var(--cinza-1);
+  color: var(--cinza-5);
+  padding: 8px 10px;
+  text-align: left;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .8px;
+  border-bottom: 2px solid var(--cinza-2);
+}
+.tabela-itens th.num,
+.tabela-itens th.qtd,
+.tabela-itens td.num,
+.tabela-itens td.qtd { text-align: center; width: 50px; }
+.tabela-itens th.valor,
+.tabela-itens td.valor {
+  text-align: right;
+  font-family: 'JetBrains Mono', monospace;
+}
+.tabela-itens td {
+  padding: 10px;
+  border-bottom: 1px solid var(--cinza-2);
+  vertical-align: top;
+}
+.tabela-itens .item-nome {
+  font-weight: 600;
+  color: var(--preto);
+  font-size: 12px;
+  white-space: pre-wrap;
+}
+.tabela-itens .item-marca {
+  font-size: 11px;
+  color: var(--cinza-4);
+  margin-top: 2px;
+}
+
+/* RESUMO FINANCEIRO */
+.resumo {
+  background: var(--cinza-1);
+  border-radius: var(--r);
+  padding: 16px;
+  margin-top: 14px;
+}
+.resumo-linha {
+  display: flex;
+  justify-content: space-between;
+  padding: 4px 0;
+  font-size: 13px;
+}
+.resumo-linha.destaque {
+  border-top: 2px solid var(--cinza-3);
+  margin-top: 10px;
+  padding-top: 10px;
+  font-size: 16px;
+  font-weight: 700;
+}
+.resumo-linha .valor {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 600;
+}
+.resumo-linha.destaque .valor { color: var(--verde); }
+
+/* CONDIÇÕES */
+.cond-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 10px;
+}
+.cond-card {
+  background: var(--cinza-1);
+  border-radius: 6px;
+  padding: 12px;
+}
+.cond-titulo {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--cinza-5);
+  text-transform: uppercase;
+  letter-spacing: .8px;
+  margin-bottom: 4px;
+}
+.cond-texto {
+  font-size: 12px;
+  color: var(--preto);
+  line-height: 1.5;
+}
+
+/* ENCERRAMENTO */
+.enc-conteudo {
+  font-size: 13px;
+  color: var(--preto);
+  line-height: 1.7;
+  white-space: pre-wrap;
+}
+
+/* AÇÕES — Aceitar / Recusar */
+.acoes-card {
+  background: white;
+  border-radius: var(--r);
+  box-shadow: var(--shadow);
+  padding: 24px;
+  text-align: center;
+}
+.acoes-titulo {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--azul);
+  margin-bottom: 6px;
+}
+.acoes-subtitulo {
+  font-size: 13px;
+  color: var(--cinza-5);
+  margin-bottom: 18px;
+}
+.validade-info {
+  display: inline-block;
+  background: #fff8e8;
+  color: #8a6d0b;
+  padding: 6px 14px;
+  border-radius: 16px;
+  font-size: 11px;
+  font-weight: 600;
+  margin-bottom: 18px;
+}
+.botoes-acao {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+@media (max-width: 480px) {
+  .botoes-acao { grid-template-columns: 1fr; }
+}
+.btn-acao {
+  padding: 16px 20px;
+  border: none;
+  border-radius: var(--r);
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: var(--tr);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.btn-aceitar {
+  background: var(--verde-vivo);
+  color: white;
+}
+.btn-aceitar:hover { background: #1f8030; transform: translateY(-1px); box-shadow: var(--shadow); }
+.btn-recusar {
+  background: white;
+  color: var(--vermelho);
+  border: 2px solid var(--vermelho);
+}
+.btn-recusar:hover { background: var(--vermelho-soft); }
+.btn-acao:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+
+.acoes-decidida {
+  text-align: center;
+  padding: 24px 16px;
+}
+.acoes-decidida-icon { font-size: 56px; margin-bottom: 12px; }
+.acoes-decidida-titulo {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--preto);
+  margin-bottom: 6px;
+}
+.acoes-decidida-data {
+  color: var(--cinza-4);
+  font-size: 12px;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* MODAL CONFIRMAÇÃO */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 44, 74, 0.7);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+.modal-overlay.show { display: flex; }
+.modal-box {
+  background: white;
+  border-radius: var(--r);
+  width: 100%;
+  max-width: 460px;
+  padding: 28px 24px;
+  box-shadow: var(--shadow-lg);
+  text-align: center;
+}
+.modal-icon { font-size: 48px; margin-bottom: 12px; }
+.modal-titulo {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--azul);
+  margin-bottom: 8px;
+}
+.modal-msg {
+  font-size: 13px;
+  color: var(--cinza-5);
+  line-height: 1.6;
+  margin-bottom: 18px;
+}
+.modal-input {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid var(--cinza-2);
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 13px;
+  resize: vertical;
+  min-height: 70px;
+  margin-bottom: 14px;
+}
+.modal-input:focus { outline: none; border-color: var(--azul); }
+.modal-acoes {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+.modal-btn {
+  padding: 10px 22px;
+  border: none;
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--tr);
+}
+.modal-btn-cancelar {
+  background: var(--cinza-1);
+  color: var(--cinza-5);
+  border: 1px solid var(--cinza-2);
+}
+.modal-btn-cancelar:hover { background: var(--cinza-2); }
+.modal-btn-confirmar {
+  background: var(--verde-vivo);
+  color: white;
+}
+.modal-btn-confirmar.recusar { background: var(--vermelho); }
+.modal-btn-confirmar:hover { transform: translateY(-1px); box-shadow: var(--shadow); }
+
+/* RODAPÉ */
+.rodape {
+  text-align: center;
+  padding: 24px;
+  color: var(--cinza-4);
+  font-size: 11px;
+}
+.rodape strong { color: var(--cinza-5); }
+
+@media (max-width: 600px) {
+  .header-info { font-size: 10px; text-align: left; }
+  .container { padding: 16px; }
+  .proposta-conteudo { padding: 16px; }
+  .proposta-header { padding: 18px; }
+  .proposta-numero { font-size: 18px; }
+}
+</style>
+</head>
+<body>
+
+<!-- LOADING -->
+<div class="loading-screen" id="loadingScreen">
+  <div class="loading-spinner"></div>
+  <div class="loading-msg">Carregando proposta...</div>
+</div>
+
+<!-- ERRO -->
+<div class="error-screen" id="errorScreen">
+  <div class="error-icon" id="errorIcon">⚠️</div>
+  <div class="error-title" id="errorTitle">Proposta não encontrada</div>
+  <div class="error-msg" id="errorMsg">
+    O link que você acessou não corresponde a nenhuma proposta válida.
+    Verifique se o endereço está correto ou entre em contato com a NEWPC.
+  </div>
+  <div class="error-logo">
+    <strong style="color: var(--azul); font-size: 14px;">NEWPC TECNOLOGIA</strong>
+  </div>
+</div>
+
+<!-- CONTEÚDO PRINCIPAL -->
+<div id="appContent" style="display:none;">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-content">
+      <div class="header-logo">
+        <img src="../../assets/newpc-logo.png" alt="NEWPC">
+      </div>
+      <div class="header-info">
+        <strong>NEWPC TECNOLOGIA LTDA</strong><br>
+        CNPJ: 20.892.343/0001-15<br>
+        (67) 3026-6571 · comercial@newpc.com.br
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+
+    <!-- STATUS CARD -->
+    <div class="status-card" id="statusCard">
+      <div class="status-info">
+        <div class="status-icon" id="statusIcon">📄</div>
+        <div class="status-texto">
+          <strong id="statusTitulo">Proposta Comercial</strong>
+          <span id="statusDescricao">Visualização aberta para o cliente</span>
+        </div>
+      </div>
+      <div class="status-numero" id="statusNumero">—</div>
+    </div>
+
+    <!-- PROPOSTA -->
+    <div class="proposta-card">
+      <div class="proposta-header">
+        <h1>Proposta Comercial</h1>
+        <div class="proposta-numero" id="propostaNumero">NEWPC-XXXX-XXXX</div>
+      </div>
+
+      <div class="proposta-conteudo">
+
+        <!-- CLIENTE -->
+        <div class="secao">
+          <div class="secao-titulo">Apresentado a</div>
+          <div class="cliente-nome" id="clienteNome">—</div>
+          <div class="cliente-info" id="clienteInfo"></div>
+        </div>
+
+        <!-- DIAGNÓSTICO -->
+        <div class="secao" id="secaoDiagnostico">
+          <div class="secao-titulo">Diagnóstico e Necessidade</div>
+          <div id="diagnosticoConteudo"></div>
+        </div>
+
+        <!-- ITENS -->
+        <div class="secao">
+          <div class="secao-titulo" id="tituloItens">Solução Tecnológica</div>
+          <table class="tabela-itens">
+            <thead>
+              <tr>
+                <th class="num">#</th>
+                <th>Descrição</th>
+                <th class="qtd">Qtd</th>
+                <th class="valor" id="thValorUnit">Valor Unit.</th>
+                <th class="valor" id="thValorTotal">Total</th>
+              </tr>
+            </thead>
+            <tbody id="itensBody"></tbody>
+          </table>
+
+          <!-- RESUMO -->
+          <div class="resumo" id="resumoContainer"></div>
+        </div>
+
+        <!-- LOGÍSTICA (só Diária) -->
+        <div class="secao" id="secaoLogistica" style="display:none;">
+          <div class="secao-titulo">Logística do Evento</div>
+          <div class="cond-grid" id="logisticaGrid"></div>
+          <div id="obsEvento" style="margin-top:10px;font-size:12px;color:var(--cinza-5);"></div>
+        </div>
+
+        <!-- CONDIÇÕES COMERCIAIS -->
+        <div class="secao" id="secaoCondicoes">
+          <div class="secao-titulo">Condições Comerciais</div>
+          <div class="cond-grid" id="condicoesGrid"></div>
+        </div>
+
+        <!-- ENCERRAMENTO -->
+        <div class="secao" id="secaoEncerramento">
+          <div class="secao-titulo">Diferenciais NEWPC</div>
+          <div class="enc-conteudo" id="encerramentoConteudo"></div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- AÇÕES — Aceitar / Recusar -->
+    <div class="acoes-card" id="acoesCard">
+      <div id="acoesPendente">
+        <div class="acoes-titulo">Resposta do Cliente</div>
+        <div class="acoes-subtitulo">Por favor, aceite ou recuse esta proposta</div>
+        <div class="validade-info" id="validadeInfo">⏰ Válida até DD/MM/AAAA</div>
+        <div class="botoes-acao">
+          <button class="btn-acao btn-aceitar" onclick="abrirConfirmacao('aceita')">
+            ✅ Aceitar Proposta
+          </button>
+          <button class="btn-acao btn-recusar" onclick="abrirConfirmacao('recusada')">
+            ❌ Recusar
+          </button>
+        </div>
+      </div>
+
+      <div class="acoes-decidida" id="acoesDecidida" style="display:none;">
+        <div class="acoes-decidida-icon" id="decididaIcon">✅</div>
+        <div class="acoes-decidida-titulo" id="decididaTitulo">Proposta Aceita</div>
+        <div class="acoes-decidida-data" id="decididaData">—</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- RODAPÉ -->
+  <div class="rodape">
+    <strong>NEWPC Tecnologia LTDA</strong> · Tecnologia Educacional<br>
+    Esta é uma página oficial da NEWPC. Em caso de dúvidas, ligue (67) 3026-6571.
+  </div>
+
+</div>
+
+<!-- MODAL CONFIRMAÇÃO -->
+<div class="modal-overlay" id="modalConfirma">
+  <div class="modal-box">
+    <div class="modal-icon" id="modalIcon">✅</div>
+    <div class="modal-titulo" id="modalTitulo">Confirmar Aceite</div>
+    <div class="modal-msg" id="modalMsg">
+      Você está confirmando o aceite desta proposta. A NEWPC será notificada e entrará em contato para os próximos passos.
+    </div>
+    <textarea class="modal-input" id="modalObservacao" placeholder="Observações (opcional)..."></textarea>
+    <div class="modal-acoes">
+      <button class="modal-btn modal-btn-cancelar" onclick="fecharConfirmacao()">Cancelar</button>
+      <button class="modal-btn modal-btn-confirmar" id="btnConfirmar" onclick="confirmarDecisao()">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<!-- FIREBASE -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.1/firebase-app.js";
+import {
+  getFirestore, collection, doc, getDocs, getDoc, updateDoc, query, where, limit,
+  serverTimestamp, arrayUnion, increment
+} from "https://www.gstatic.com/firebasejs/10.12.1/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCHLrwHDUsVKKyIgHlbpkWsv1dOTBfY52M",
+  authDomain: "portal-do-educador-interno.firebaseapp.com",
+  projectId: "portal-do-educador-interno",
+  storageBucket: "portal-do-educador-interno.firebasestorage.app",
+  messagingSenderId: "133947200175",
+  appId: "1:133947200175:web:a819a5a7c1196544d97a5a"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// Expor pra usar fora do módulo
+window._fb = {
+  db, collection, doc, getDocs, getDoc, updateDoc, query, where, limit,
+  serverTimestamp, arrayUnion, increment
+};
+window._fbReady = true;
+window.dispatchEvent(new Event('fbReady'));
+</script>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════════
+   PÁGINA PÚBLICA — Visualização e decisão da proposta
+═══════════════════════════════════════════════════════════════════ */
+
+const COLECAO = 'propostas_comerciais';
+let propostaCarregada = null;
+let decisaoEscolhida = null;
+
+/* ═══ INICIALIZAÇÃO ═══ */
+function inicializar() {
+  // Pega o slug da URL: /propostas/p/?id=ABC123  OU  /propostas/p/#ABC123
+  const params = new URLSearchParams(window.location.search);
+  let slug = params.get('id') || window.location.hash.replace('#', '').trim();
+
+  if (!slug) {
+    mostrarErro('Link inválido', 'Esta página precisa de um identificador de proposta no link.');
+    return;
+  }
+
+  // Aguarda Firebase
+  if (window._fbReady) {
+    carregarProposta(slug);
+  } else {
+    window.addEventListener('fbReady', () => carregarProposta(slug), { once: true });
+  }
+}
+
+async function carregarProposta(slug) {
+  try {
+    const { db, collection, getDocs, query, where, limit } = window._fb;
+
+    // Busca por slug
+    const q = query(collection(db, COLECAO), where('slug', '==', slug), limit(1));
+    const snap = await getDocs(q);
+
+    if (snap.empty) {
+      mostrarErro(
+        'Proposta não encontrada',
+        'O link que você acessou não corresponde a nenhuma proposta válida. Verifique se o endereço está correto ou entre em contato com a NEWPC.'
+      );
+      return;
+    }
+
+    const docSnap = snap.docs[0];
+    propostaCarregada = { id: docSnap.id, ...docSnap.data() };
+
+    // Verifica se proposta foi compartilhada (linkPublico true)
+    if (!propostaCarregada.linkPublico) {
+      mostrarErro(
+        'Link inativo',
+        'Esta proposta não está mais disponível para visualização pública. Entre em contato com a NEWPC.'
+      );
+      return;
+    }
+
+    // Verifica validade
+    if (estaExpirada(propostaCarregada)) {
+      // Mostra a proposta mas com aviso de expirada
+      propostaCarregada._expirada = true;
+    }
+
+    // Registra visualização
+    await registrarVisualizacao(docSnap.id);
+
+    // Renderiza
+    renderizarProposta();
+    document.getElementById('loadingScreen').classList.add('hidden');
+    document.getElementById('appContent').style.display = 'block';
+
+  } catch (err) {
+    console.error('Erro ao carregar proposta:', err);
+    mostrarErro(
+      'Erro ao carregar',
+      'Não foi possível carregar esta proposta. Verifique sua conexão e tente novamente.'
+    );
+  }
+}
+
+function mostrarErro(titulo, msg) {
+  document.getElementById('loadingScreen').classList.add('hidden');
+  document.getElementById('errorTitle').textContent = titulo;
+  document.getElementById('errorMsg').textContent = msg;
+  document.getElementById('errorScreen').classList.add('show');
+}
+
+/* ═══ VALIDADE ═══ */
+function estaExpirada(p) {
+  if (!p.dataAtualizacao && !p.dataCriacao) return false;
+  const validadeDias = p.validadeDias || 30;
+  const dataBase = p.dataAtualizacao?.toDate?.() || p.dataCriacao?.toDate?.() || new Date();
+  const expiraEm = new Date(dataBase.getTime() + validadeDias * 24 * 60 * 60 * 1000);
+  return new Date() > expiraEm;
+}
+
+function calcularDataExpiracao(p) {
+  const validadeDias = p.validadeDias || 30;
+  const dataBase = p.dataAtualizacao?.toDate?.() || p.dataCriacao?.toDate?.() || new Date();
+  return new Date(dataBase.getTime() + validadeDias * 24 * 60 * 60 * 1000);
+}
+
+/* ═══ VISUALIZAÇÃO ═══ */
+async function registrarVisualizacao(propostaId) {
+  try {
+    const { db, doc, updateDoc, increment, serverTimestamp } = window._fb;
+    await updateDoc(doc(db, COLECAO, propostaId), {
+      visualizacoes: increment(1),
+      ultimaVisualizacao: serverTimestamp()
+    });
+  } catch (err) {
+    // Não impede de carregar se falhar
+    console.warn('Erro ao registrar visualização:', err);
+  }
+}
+
+/* ═══ RENDER ═══ */
+function renderizarProposta() {
+  const p = propostaCarregada;
+  const tipoCom = p.tipoComercial || 'locacao_mensal';
+
+  // Cabeçalho
+  setText('propostaNumero', p.numero || '—');
+  setText('statusNumero', p.numero || '—');
+
+  // Status (no topo)
+  atualizarStatus();
+
+  // Cliente
+  const cliente = p.cliente || {};
+  const ehPF = (p.tipoCliente === 'pessoa_fisica');
+  setText('clienteNome', cliente.razaoSocial || '—');
+
+  const partes = [];
+  if (cliente.cnpj) partes.push(`<strong>${ehPF ? 'CPF' : 'CNPJ'}:</strong> ${escHtml(cliente.cnpj)}`);
+  if (ehPF) {
+    if (cliente.rg) partes.push(`<strong>RG:</strong> ${escHtml(cliente.rg)}`);
+    if (cliente.dataNascimento) {
+      const dt = new Date(cliente.dataNascimento + 'T00:00:00').toLocaleDateString('pt-BR');
+      partes.push(`<strong>Nascimento:</strong> ${escHtml(dt)}`);
+    }
+  } else if (cliente.ie) partes.push(`<strong>IE:</strong> ${escHtml(cliente.ie)}`);
+  if (cliente.endereco) partes.push(`<strong>Endereço:</strong> ${escHtml(cliente.endereco)}`);
+  if (cliente.cidade || cliente.uf) {
+    partes.push(`<strong>Cidade:</strong> ${escHtml(cliente.cidade || '')}/${escHtml(cliente.uf || '')}`);
+  }
+  document.getElementById('clienteInfo').innerHTML = partes.map(s => `<span>${s}</span>`).join('');
+
+  // Diagnóstico
+  const diag = p.diagnostico || {};
+  const diagBlocos = [];
+  if (diag.contexto) diagBlocos.push({ label: 'Contexto', texto: diag.contexto });
+  if (diag.necessidade) diagBlocos.push({ label: 'Necessidade', texto: diag.necessidade });
+  if (diag.justificativa) diagBlocos.push({ label: 'Justificativa', texto: diag.justificativa });
+  const diagSec = document.getElementById('secaoDiagnostico');
+  if (diagBlocos.length === 0) {
+    diagSec.style.display = 'none';
+  } else {
+    document.getElementById('diagnosticoConteudo').innerHTML = diagBlocos.map(b => `
+      <div class="diag-bloco">
+        <div class="diag-label">${escHtml(b.label)}</div>
+        <div class="diag-texto">${escHtml(b.texto)}</div>
+      </div>
+    `).join('');
+  }
+
+  // Título dos itens conforme tipo
+  let tituloItens = 'Solução Tecnológica';
+  let labelValorUnit = 'Valor Unit.';
+  let labelValorTotal = 'Total';
+  if (tipoCom === 'locacao_mensal') {
+    labelValorUnit = 'Vlr Mensal Unit.';
+    labelValorTotal = 'Total Mensal';
+  } else if (tipoCom === 'diaria') {
+    labelValorUnit = 'Vlr Diária Unit.';
+    labelValorTotal = 'Total Diário';
+  }
+  setText('tituloItens', tituloItens);
+  setText('thValorUnit', labelValorUnit);
+  setText('thValorTotal', labelValorTotal);
+
+  // Itens
+  const itens = p.itens || [];
+  const itensBody = document.getElementById('itensBody');
+  itensBody.innerHTML = itens.map((it, i) => `
+    <tr>
+      <td class="num">${i + 1}</td>
+      <td>
+        <div class="item-nome">${escHtml(it.nome || '—')}</div>
+        ${it.marca ? `<div class="item-marca">${escHtml(it.marca)}</div>` : ''}
+      </td>
+      <td class="qtd">${it.qtd || 1}</td>
+      <td class="valor">${formatarMoeda(it.valorUnitMensal || 0)}</td>
+      <td class="valor">${formatarMoeda(it.totalMensal || (it.qtd * it.valorUnitMensal) || 0)}</td>
+    </tr>
+  `).join('') || '<tr><td colspan="5" style="text-align:center;color:var(--cinza-4);padding:20px;">Nenhum item</td></tr>';
+
+  // Resumo financeiro
+  renderResumo(p);
+
+  // Logística (Diária)
+  if (tipoCom === 'diaria') {
+    const log = p.logistica || {};
+    const obs = p.observacoesEvento;
+    const cards = [
+      { titulo: 'Entrega', valor: log.entrega },
+      { titulo: 'Montagem', valor: log.montagem },
+      { titulo: 'Retirada', valor: log.retirada }
+    ].filter(c => c.valor && c.valor.trim());
+
+    const temConteudo = cards.length > 0 || (obs && obs.trim());
+    const logSec = document.getElementById('secaoLogistica');
+
+    if (temConteudo) {
+      logSec.style.display = 'block';
+      document.getElementById('logisticaGrid').innerHTML = cards.map(c => `
+        <div class="cond-card">
+          <div class="cond-titulo">${escHtml(c.titulo)}</div>
+          <div class="cond-texto">${escHtml(c.valor)}</div>
+        </div>
+      `).join('');
+      const obsEl = document.getElementById('obsEvento');
+      if (obs && obs.trim()) {
+        obsEl.innerHTML = `<strong style="color:var(--azul);">Observações:</strong> ${escHtml(obs)}`;
+      } else {
+        obsEl.style.display = 'none';
+      }
+    } else {
+      logSec.style.display = 'none';
+    }
+  }
+
+  // Condições
+  const cond = p.condicoes || {};
+  const condCards = [
+    { titulo: 'Forma de Pagamento', valor: cond.pagamento },
+    { titulo: 'Prazo de Entrega', valor: cond.entrega },
+    { titulo: 'Garantia', valor: cond.garantia },
+    { titulo: 'Suporte Técnico', valor: cond.suporte }
+  ].filter(c => c.valor && c.valor.trim());
+
+  const condSec = document.getElementById('secaoCondicoes');
+  if (condCards.length === 0) {
+    condSec.style.display = 'none';
+  } else {
+    document.getElementById('condicoesGrid').innerHTML = condCards.map(c => `
+      <div class="cond-card">
+        <div class="cond-titulo">${escHtml(c.titulo)}</div>
+        <div class="cond-texto">${escHtml(c.valor)}</div>
+      </div>
+    `).join('');
+  }
+
+  // Encerramento
+  const enc = p.encerramento || {};
+  const encTextos = [enc.diferenciais, enc.mensagem].filter(t => t && t.trim());
+  const encSec = document.getElementById('secaoEncerramento');
+  if (encTextos.length === 0) {
+    encSec.style.display = 'none';
+  } else {
+    document.getElementById('encerramentoConteudo').innerHTML = escHtml(encTextos.join('\n\n'));
+  }
+
+  // Validade na seção de ações
+  const expDate = calcularDataExpiracao(p);
+  setText('validadeInfo', `⏰ Válida até ${expDate.toLocaleDateString('pt-BR')}`);
+
+  // Estado das ações
+  atualizarAcoes();
+}
+
+function renderResumo(p) {
+  const tipoCom = p.tipoComercial || 'locacao_mensal';
+  const linhas = [];
+
+  if (tipoCom === 'locacao_mensal') {
+    linhas.push({ label: 'Total Mensal Bruto', valor: p.totalMensalBruto || 0 });
+    if (p.descontoMensalValor > 0) {
+      linhas.push({ label: 'Desconto', valor: -(p.descontoMensalValor || 0), classe: 'desconto' });
+    }
+    linhas.push({ label: 'Valor Mensal Final', valor: p.totalMensalFinal || 0 });
+    linhas.push({ label: `Prazo do Contrato`, valor: `${p.prazoMeses || 36} meses`, raw: true });
+    linhas.push({ label: 'Total do Contrato', valor: p.totalContrato || 0, destaque: true });
+  } else if (tipoCom === 'venda') {
+    linhas.push({ label: 'Total Bruto', valor: p.totalMensalBruto || 0 });
+    if (p.descontoMensalValor > 0) {
+      linhas.push({ label: 'Desconto', valor: -(p.descontoMensalValor || 0) });
+    }
+    if (p.formaPagamento === 'parcelado' && p.numParcelas > 1) {
+      linhas.push({ label: 'Forma de Pagamento', valor: `${p.numParcelas}x de ${formatarMoeda((p.totalContrato || 0) / p.numParcelas)}`, raw: true });
+    } else {
+      linhas.push({ label: 'Forma de Pagamento', valor: 'À vista', raw: true });
+    }
+    linhas.push({ label: 'Valor Total da Venda', valor: p.totalContrato || 0, destaque: true });
+  } else if (tipoCom === 'diaria') {
+    linhas.push({ label: 'Total Diário Bruto', valor: p.totalMensalBruto || 0 });
+    if (p.descontoMensalValor > 0) {
+      linhas.push({ label: 'Desconto', valor: -(p.descontoMensalValor || 0) });
+    }
+    linhas.push({ label: 'Total Diário Final', valor: p.totalMensalFinal || 0 });
+    let textoPeriodo = `${p.qtdDias || 1} dia(s)`;
+    if (p.dataInicio && p.dataFim) {
+      const fmt = (d) => new Date(d + 'T00:00:00').toLocaleDateString('pt-BR');
+      textoPeriodo = `${fmt(p.dataInicio)} a ${fmt(p.dataFim)} (${p.qtdDias || 1} dia(s))`;
+    }
+    linhas.push({ label: 'Período do Evento', valor: textoPeriodo, raw: true });
+    linhas.push({ label: 'Valor Total do Evento', valor: p.totalContrato || 0, destaque: true });
+  }
+
+  document.getElementById('resumoContainer').innerHTML = linhas.map(l => `
+    <div class="resumo-linha ${l.destaque ? 'destaque' : ''}">
+      <span>${escHtml(l.label)}</span>
+      <span class="valor">${l.raw ? escHtml(l.valor) : formatarMoeda(l.valor)}</span>
+    </div>
+  `).join('');
+}
+
+function atualizarStatus() {
+  const p = propostaCarregada;
+  const card = document.getElementById('statusCard');
+  const icon = document.getElementById('statusIcon');
+  const titulo = document.getElementById('statusTitulo');
+  const desc = document.getElementById('statusDescricao');
+
+  card.classList.remove('aceita', 'recusada', 'expirada');
+
+  if (p.decisaoCliente === 'aceita') {
+    card.classList.add('aceita');
+    icon.textContent = '✅';
+    titulo.textContent = 'Proposta Aceita';
+    const dt = p.decisaoData?.toDate?.()?.toLocaleString('pt-BR') || '—';
+    desc.textContent = `Aceita em ${dt}`;
+  } else if (p.decisaoCliente === 'recusada') {
+    card.classList.add('recusada');
+    icon.textContent = '❌';
+    titulo.textContent = 'Proposta Recusada';
+    const dt = p.decisaoData?.toDate?.()?.toLocaleString('pt-BR') || '—';
+    desc.textContent = `Recusada em ${dt}`;
+  } else if (p._expirada) {
+    card.classList.add('expirada');
+    icon.textContent = '⏰';
+    titulo.textContent = 'Proposta Expirada';
+    desc.textContent = 'Prazo de validade encerrado';
+  } else {
+    icon.textContent = '📄';
+    titulo.textContent = 'Proposta Comercial';
+    desc.textContent = 'Aguardando sua resposta';
+  }
+}
+
+function atualizarAcoes() {
+  const p = propostaCarregada;
+  const pendente = document.getElementById('acoesPendente');
+  const decidida = document.getElementById('acoesDecidida');
+
+  // Se já decidida ou expirada, não mostra botões
+  if (p.decisaoCliente === 'aceita' || p.decisaoCliente === 'recusada') {
+    pendente.style.display = 'none';
+    decidida.style.display = 'block';
+
+    if (p.decisaoCliente === 'aceita') {
+      document.getElementById('decididaIcon').textContent = '✅';
+      document.getElementById('decididaTitulo').textContent = 'Proposta Aceita';
+    } else {
+      document.getElementById('decididaIcon').textContent = '❌';
+      document.getElementById('decididaTitulo').textContent = 'Proposta Recusada';
+    }
+
+    const dt = p.decisaoData?.toDate?.()?.toLocaleString('pt-BR') || '—';
+    document.getElementById('decididaData').textContent = `Decisão registrada em ${dt}`;
+
+  } else if (p._expirada) {
+    pendente.style.display = 'none';
+    decidida.style.display = 'block';
+    document.getElementById('decididaIcon').textContent = '⏰';
+    document.getElementById('decididaTitulo').textContent = 'Proposta Expirada';
+    document.getElementById('decididaData').textContent = 'Esta proposta não pode mais ser respondida';
+  } else {
+    pendente.style.display = 'block';
+    decidida.style.display = 'none';
+  }
+}
+
+/* ═══ AÇÕES — Aceitar/Recusar ═══ */
+function abrirConfirmacao(decisao) {
+  decisaoEscolhida = decisao;
+  const modal = document.getElementById('modalConfirma');
+  const icon = document.getElementById('modalIcon');
+  const titulo = document.getElementById('modalTitulo');
+  const msg = document.getElementById('modalMsg');
+  const btn = document.getElementById('btnConfirmar');
+
+  if (decisao === 'aceita') {
+    icon.textContent = '✅';
+    titulo.textContent = 'Confirmar Aceite';
+    msg.textContent = 'Você está confirmando o aceite desta proposta. A NEWPC será notificada e entrará em contato para os próximos passos.';
+    btn.textContent = 'Sim, aceitar';
+    btn.classList.remove('recusar');
+  } else {
+    icon.textContent = '❌';
+    titulo.textContent = 'Confirmar Recusa';
+    msg.textContent = 'Você está confirmando a recusa desta proposta. Pode adicionar uma observação para a NEWPC entender o motivo.';
+    btn.textContent = 'Sim, recusar';
+    btn.classList.add('recusar');
+  }
+
+  document.getElementById('modalObservacao').value = '';
+  modal.classList.add('show');
+}
+
+function fecharConfirmacao() {
+  document.getElementById('modalConfirma').classList.remove('show');
+  decisaoEscolhida = null;
+}
+
+async function confirmarDecisao() {
+  if (!decisaoEscolhida || !propostaCarregada) return;
+
+  const btn = document.getElementById('btnConfirmar');
+  btn.disabled = true;
+  btn.textContent = 'Enviando...';
+
+  const observacao = document.getElementById('modalObservacao').value.trim();
+
+  try {
+    const { db, doc, updateDoc, serverTimestamp } = window._fb;
+    const updates = {
+      decisaoCliente: decisaoEscolhida,
+      decisaoData: serverTimestamp(),
+      decisaoObservacao: observacao || ''
+    };
+
+    // Sincroniza status interno também
+    if (decisaoEscolhida === 'aceita') {
+      updates.status = 'aprovada';
+    } else if (decisaoEscolhida === 'recusada') {
+      updates.status = 'recusada';
+    }
+
+    await updateDoc(doc(db, COLECAO, propostaCarregada.id), updates);
+
+    // Atualiza local
+    propostaCarregada.decisaoCliente = decisaoEscolhida;
+    propostaCarregada.decisaoData = { toDate: () => new Date() };
+    propostaCarregada.decisaoObservacao = observacao;
+
+    fecharConfirmacao();
+    atualizarStatus();
+    atualizarAcoes();
+
+    // Scroll suave pro topo pra mostrar status
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+  } catch (err) {
+    console.error('Erro:', err);
+    alert('Não foi possível registrar sua decisão. Verifique sua conexão e tente novamente.');
+    btn.disabled = false;
+    btn.textContent = decisaoEscolhida === 'aceita' ? 'Sim, aceitar' : 'Sim, recusar';
+  }
+}
+
+/* ═══ HELPERS ═══ */
+function setText(id, txt) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = txt;
+}
+
+function formatarMoeda(v) {
+  const num = parseFloat(v) || 0;
+  return 'R$ ' + num.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function escHtml(s) {
+  if (s == null) return '';
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+// Exposições globais
+window.abrirConfirmacao = abrirConfirmacao;
+window.fecharConfirmacao = fecharConfirmacao;
+window.confirmarDecisao = confirmarDecisao;
+
+// Inicia ao carregar
+window.addEventListener('DOMContentLoaded', inicializar);
+</script>
+
+</body>
+</html>
