@@ -270,6 +270,24 @@ input, textarea, select { font-family: inherit; font-size: inherit; color: inher
 }
 .btn-logout:hover { background: rgba(255,255,255,.15); }
 
+.btn-admin-usuarios {
+  background: rgba(201,149,42,.2);
+  color: #f4d77a;
+  border: 1px solid rgba(201,149,42,.4);
+  padding: 7px 12px;
+  border-radius: var(--r-sm);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--tr);
+  margin-right: 6px;
+}
+.btn-admin-usuarios:hover {
+  background: rgba(201,149,42,.35);
+  border-color: rgba(201,149,42,.7);
+  color: white;
+}
+
 /* CONTEÚDO PRINCIPAL */
 .main { max-width: 1280px; margin: 0 auto; padding: 24px; }
 
@@ -672,6 +690,365 @@ input, textarea, select { font-family: inherit; font-size: inherit; color: inher
   .form-row { grid-template-columns: 1fr; }
   .stats-bar { grid-template-columns: repeat(2, 1fr); }
 }
+
+/* ═══════════════════════════════════════════════
+   MODAL ADMIN — Gerenciar Usuários
+═══════════════════════════════════════════════ */
+.modal-admin-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15,44,74,.7);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 1100;
+  padding: 20px;
+}
+.modal-admin-overlay.show { display: flex; }
+
+.modal-admin-box {
+  background: white;
+  border-radius: var(--r-lg);
+  width: 100%;
+  max-width: 920px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: var(--shadow-lg);
+  animation: modalIn .25s cubic-bezier(.4,0,.2,1);
+}
+
+.modal-admin-header {
+  padding: 18px 24px;
+  border-bottom: 1px solid var(--cinza-2);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--azul);
+  color: white;
+}
+.modal-admin-titulo { font-size: 16px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+.modal-admin-fechar {
+  font-size: 22px;
+  color: rgba(255,255,255,.7);
+  background: none;
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: var(--tr);
+}
+.modal-admin-fechar:hover { background: rgba(255,255,255,.15); color: white; }
+
+.modal-admin-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0;
+}
+
+/* TABS */
+.admin-tabs {
+  display: flex;
+  border-bottom: 2px solid var(--cinza-2);
+  background: var(--cinza-1);
+  padding: 0 16px;
+  gap: 4px;
+}
+.admin-tab {
+  background: transparent;
+  border: none;
+  padding: 14px 18px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--cinza-5);
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  transition: var(--tr);
+  margin-bottom: -2px;
+}
+.admin-tab:hover { color: var(--azul); }
+.admin-tab.active {
+  color: var(--azul);
+  border-bottom-color: var(--azul);
+  background: white;
+}
+
+.admin-tab-content { display: none; padding: 22px 24px; }
+.admin-tab-content.active { display: block; }
+
+/* SEARCH BAR */
+.admin-search-bar {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.admin-search, .admin-filter {
+  padding: 9px 12px;
+  border: 1px solid var(--cinza-2);
+  border-radius: var(--r-sm);
+  font-family: inherit;
+  font-size: 13px;
+  background: white;
+}
+.admin-search:focus, .admin-filter:focus {
+  outline: none;
+  border-color: var(--azul);
+}
+
+/* LISTA DE USUÁRIOS */
+.admin-loading, .admin-empty {
+  text-align: center;
+  padding: 48px 16px;
+  color: var(--cinza-4);
+  font-size: 13px;
+}
+.admin-empty .icon { font-size: 40px; margin-bottom: 12px; opacity: .5; display: block; }
+
+.admin-usuarios-list { display: flex; flex-direction: column; gap: 8px; }
+
+.admin-user-card {
+  display: grid;
+  grid-template-columns: 44px 1fr auto auto auto;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 14px;
+  background: white;
+  border: 1px solid var(--cinza-2);
+  border-radius: var(--r-sm);
+  transition: var(--tr);
+}
+.admin-user-card:hover {
+  border-color: var(--azul);
+  box-shadow: var(--shadow-sm);
+}
+.admin-user-card.inativo {
+  opacity: .6;
+  background: var(--cinza-1);
+}
+
+.admin-user-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--azul);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.admin-user-info { min-width: 0; }
+.admin-user-nome {
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--preto);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.admin-user-eu-tag {
+  background: var(--verde-soft, #e9f5ec);
+  color: var(--verde, #1a6b2a);
+  font-size: 9px;
+  font-weight: 700;
+  padding: 1px 5px;
+  border-radius: 3px;
+  letter-spacing: .5px;
+}
+.admin-user-email {
+  font-size: 11px;
+  color: var(--cinza-4);
+  margin-top: 1px;
+  word-break: break-all;
+}
+
+.admin-user-role-badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 4px 8px;
+  border-radius: 12px;
+  letter-spacing: .5px;
+  white-space: nowrap;
+  text-transform: uppercase;
+}
+.admin-user-role-badge.admin { background: rgba(201,149,42,.15); color: #b88420; }
+.admin-user-role-badge.vendedor { background: rgba(27,72,118,.15); color: #1b4876; }
+.admin-user-role-badge.operador { background: rgba(55,65,81,.12); color: #4a5260; }
+.admin-user-role-badge.visualizador { background: rgba(124,58,237,.15); color: #7c3aed; }
+
+.admin-user-status {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 10px;
+  letter-spacing: .4px;
+  text-transform: uppercase;
+}
+.admin-user-status.ativo { background: var(--verde-soft, #e9f5ec); color: var(--verde, #1a6b2a); }
+.admin-user-status.inativo { background: var(--vermelho-soft, #fce8e8); color: var(--vermelho, #c63b3b); }
+
+.admin-user-actions {
+  display: flex;
+  gap: 4px;
+}
+.admin-user-actions button {
+  background: var(--cinza-1);
+  border: 1px solid var(--cinza-2);
+  font-size: 14px;
+  padding: 6px 9px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: var(--tr);
+  color: var(--cinza-5);
+}
+.admin-user-actions button:hover {
+  background: var(--azul-soft, #e8f1fa);
+  border-color: var(--azul);
+  color: var(--azul);
+}
+.admin-user-actions button.danger:hover {
+  background: var(--vermelho-soft, #fce8e8);
+  border-color: var(--vermelho, #c63b3b);
+  color: var(--vermelho, #c63b3b);
+}
+
+/* FORMULÁRIO */
+.admin-form { max-width: 720px; }
+.form-row { margin-bottom: 16px; }
+.form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.form-col { display: flex; flex-direction: column; }
+.form-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--cinza-5);
+  margin-bottom: 5px;
+  letter-spacing: .3px;
+  text-transform: uppercase;
+}
+.form-label .req { color: var(--vermelho, #c63b3b); }
+.form-label .opt { color: var(--cinza-4); font-weight: 400; text-transform: none; letter-spacing: 0; }
+.form-input {
+  padding: 9px 12px;
+  border: 1px solid var(--cinza-2);
+  border-radius: var(--r-sm);
+  font-family: inherit;
+  font-size: 13px;
+  background: white;
+}
+.form-input:focus { outline: none; border-color: var(--azul); }
+.form-help {
+  font-size: 11px;
+  color: var(--cinza-4);
+  margin-top: 4px;
+  line-height: 1.4;
+}
+
+.form-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--cinza-5);
+  cursor: pointer;
+}
+.form-checkbox input { cursor: pointer; }
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 22px;
+  padding-top: 18px;
+  border-top: 1px solid var(--cinza-2);
+}
+.btn-primary, .btn-secondary {
+  padding: 10px 22px;
+  border-radius: var(--r-sm);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: var(--tr);
+}
+.btn-primary {
+  background: var(--azul);
+  color: white;
+}
+.btn-primary:hover { background: var(--azul-med, #1b4876); }
+.btn-primary:disabled { opacity: .6; cursor: not-allowed; }
+.btn-secondary {
+  background: var(--cinza-1);
+  color: var(--cinza-5);
+  border: 1px solid var(--cinza-2);
+}
+.btn-secondary:hover { background: var(--cinza-2); }
+
+/* ROLES INFO */
+.admin-roles-info { display: flex; flex-direction: column; gap: 12px; margin-bottom: 18px; }
+.admin-role-card {
+  display: grid;
+  grid-template-columns: 50px 1fr;
+  gap: 14px;
+  padding: 14px 16px;
+  border: 1px solid var(--cinza-2);
+  border-radius: var(--r-sm);
+  border-left-width: 4px;
+  background: white;
+}
+.admin-role-card.admin { border-left-color: #c9952a; }
+.admin-role-card.vendedor { border-left-color: #1b4876; }
+.admin-role-card.operador { border-left-color: #374151; }
+.admin-role-card.visualizador { border-left-color: #7c3aed; }
+.admin-role-icon {
+  font-size: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.admin-role-text strong {
+  font-size: 14px;
+  color: var(--preto);
+  display: block;
+  margin-bottom: 4px;
+}
+.admin-role-text span {
+  font-size: 12px;
+  color: var(--cinza-5);
+  line-height: 1.5;
+}
+
+.admin-roles-aviso {
+  background: #fff8e8;
+  border: 1px solid #f4d77a;
+  color: #8a6d0b;
+  padding: 12px 14px;
+  border-radius: var(--r-sm);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+/* RESPONSIVO */
+@media (max-width: 720px) {
+  .admin-search-bar { grid-template-columns: 1fr; }
+  .admin-user-card {
+    grid-template-columns: 44px 1fr;
+    gap: 10px;
+    grid-row-gap: 8px;
+  }
+  .admin-user-info { grid-column: span 1; }
+  .admin-user-role-badge,
+  .admin-user-status,
+  .admin-user-actions { grid-column: 2; justify-self: start; }
+  .form-row-2 { grid-template-columns: 1fr; }
+}
 </style>
 </head>
 <body>
@@ -730,6 +1107,7 @@ input, textarea, select { font-family: inherit; font-size: inherit; color: inher
         <div class="user-role" id="userRole">—</div>
       </div>
       <div class="user-avatar" id="userAvatar">?</div>
+      <button class="btn-admin-usuarios" id="btnAdminUsuarios" onclick="abrirAdminUsuarios()" style="display:none;" title="Gerenciar usuários">👥</button>
       <button class="btn-logout" onclick="fazerLogout()">Sair</button>
     </div>
   </div>
@@ -830,6 +1208,129 @@ input, textarea, select { font-family: inherit; font-size: inherit; color: inher
   </div>
 </div>
 
+<!-- ═══════════════════════════════════════════════
+     MODAL ADMIN — Gerenciar Usuários
+═══════════════════════════════════════════════ -->
+<div class="modal-admin-overlay" id="modalAdminUsuarios">
+  <div class="modal-admin-box">
+    <div class="modal-admin-header">
+      <div class="modal-admin-titulo">👥 Gerenciar Usuários</div>
+      <button class="modal-admin-fechar" onclick="fecharAdminUsuarios()">×</button>
+    </div>
+
+    <div class="modal-admin-body">
+
+      <!-- TABS -->
+      <div class="admin-tabs">
+        <button class="admin-tab active" data-tab="lista" onclick="mudarTabAdmin('lista')">📋 Lista de Usuários</button>
+        <button class="admin-tab" data-tab="cadastro" onclick="abrirFormNovoUsuarioPublico()">➕ Novo Usuário</button>
+        <button class="admin-tab" data-tab="roles" onclick="mudarTabAdmin('roles')">🛡️ Sobre os Roles</button>
+      </div>
+
+      <!-- TAB LISTA -->
+      <div class="admin-tab-content active" data-tab-content="lista">
+        <div class="admin-search-bar">
+          <input type="text" class="admin-search" id="adminSearchUsers"
+                 placeholder="🔍 Buscar por nome ou email..." oninput="filtrarUsuarios()">
+          <select class="admin-filter" id="adminFilterRole" onchange="filtrarUsuarios()">
+            <option value="">Todos os roles</option>
+            <option value="admin">👑 Admin</option>
+            <option value="vendedor">💼 Vendedor</option>
+            <option value="operador">👁 Operador</option>
+            <option value="visualizador">🔍 Visualizador</option>
+          </select>
+          <select class="admin-filter" id="adminFilterStatus" onchange="filtrarUsuarios()">
+            <option value="">Todos status</option>
+            <option value="ativo">✅ Ativos</option>
+            <option value="inativo">⛔ Desativados</option>
+          </select>
+        </div>
+
+        <div id="adminUsuariosList" class="admin-usuarios-list">
+          <div class="admin-loading">Carregando usuários...</div>
+        </div>
+      </div>
+
+      <!-- TAB CADASTRO -->
+      <div class="admin-tab-content" data-tab-content="cadastro">
+        <form class="admin-form" id="formNovoUsuario" onsubmit="salvarUsuario(event)">
+          <input type="hidden" id="formUsuarioIdOriginal">
+
+          <div class="form-row">
+            <div class="form-col">
+              <label class="form-label">Nome Completo <span class="req">*</span></label>
+              <input type="text" id="formNome" class="form-input" required maxlength="80"
+                     placeholder="Ex: João da Silva">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-col">
+              <label class="form-label">E-mail <span class="req">*</span></label>
+              <input type="email" id="formEmail" class="form-input" required maxlength="100"
+                     placeholder="usuario@newpc.com.br">
+              <small class="form-help">Esse será o login do usuário</small>
+            </div>
+          </div>
+
+          <div class="form-row form-row-2">
+            <div class="form-col">
+              <label class="form-label">Role (Permissão) <span class="req">*</span></label>
+              <select id="formRole" class="form-input" required onchange="atualizarRoleDescricao()">
+                <option value="">Selecione...</option>
+                <option value="admin">👑 Administrador</option>
+                <option value="vendedor">💼 Vendedor</option>
+                <option value="operador">👁 Operador</option>
+                <option value="visualizador">🔍 Visualizador</option>
+              </select>
+              <small class="form-help" id="roleDescricao">Selecione um role para ver descrição</small>
+            </div>
+            <div class="form-col">
+              <label class="form-label">Cargo / Departamento <span class="opt">(opcional)</span></label>
+              <input type="text" id="formRoleLabel" class="form-input" maxlength="60"
+                     placeholder="Ex: Gerente Comercial">
+              <small class="form-help">Aparece no perfil do usuário</small>
+            </div>
+          </div>
+
+          <div class="form-row" id="rowSenha">
+            <div class="form-col">
+              <label class="form-label">Senha Inicial <span class="req">*</span></label>
+              <input type="text" id="formSenha" class="form-input" minlength="6" maxlength="50"
+                     placeholder="Mínimo 6 caracteres">
+              <small class="form-help">⚠️ Anote essa senha! Compartilhe de forma segura com o usuário.</small>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <label class="form-checkbox">
+              <input type="checkbox" id="formAtivo" checked>
+              <span>Usuário ativo (pode fazer login)</span>
+            </label>
+          </div>
+
+          <div class="form-actions">
+            <button type="button" class="btn-secondary" onclick="cancelarFormUsuario()">Cancelar</button>
+            <button type="submit" class="btn-primary" id="btnSalvarUsuario">💾 Cadastrar Usuário</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- TAB ROLES -->
+      <div class="admin-tab-content" data-tab-content="roles">
+        <div class="admin-roles-info" id="adminRolesInfo"></div>
+
+        <div class="admin-roles-aviso">
+          ⚠️ <strong>Importante:</strong> Os roles definem as permissões básicas, mas a aplicação
+          das restrições nos módulos (Propostas, Catálogo) será habilitada na <strong>FASE 2</strong>
+          do sistema. Por enquanto, todos os usuários ativos têm acesso completo aos apps.
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <!-- ═══════════════════════════════════════════════
@@ -888,26 +1389,77 @@ input, textarea, select { font-family: inherit; font-size: inherit; color: inher
    Senha padrão: newpc2026 (hash SHA-256)
    Para gerar nova hash: https://emn178.github.io/online-tools/sha256.html
 ═══════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════
+   USUÁRIOS HARDCODED — usados como fallback/seed
+   (após primeira migração, dados ficam no Firestore)
+═══════════════════════════════════════════════ */
 const USUARIOS_AUTORIZADOS = [
-  {
-    email: 'restrito@portaldoeducador.com.br',
-    senhaHash: '15949b86e5ed814f1962bef4ad6977da1502c124ae93a27354d95d2d3f05fe62', // newpc2026
-    nome: 'Acesso Restrito',
-    role: 'Administrador'
-  },
   {
     email: 'alan@newpc.com.br',
     senhaHash: '15949b86e5ed814f1962bef4ad6977da1502c124ae93a27354d95d2d3f05fe62', // newpc2026
     nome: 'Alan Valerio',
-    role: 'CEO · NEWPC'
+    role: 'admin',
+    roleLabel: 'CEO · NEWPC'
+  },
+  {
+    email: 'restrito@portaldoeducador.com.br',
+    senhaHash: '15949b86e5ed814f1962bef4ad6977da1502c124ae93a27354d95d2d3f05fe62',
+    nome: 'Acesso Restrito',
+    role: 'admin',
+    roleLabel: 'Administrador'
   },
   {
     email: 'suporte@portaldoeducador.com.br',
-    senhaHash: '15949b86e5ed814f1962bef4ad6977da1502c124ae93a27354d95d2d3f05fe62', // newpc2026
+    senhaHash: '15949b86e5ed814f1962bef4ad6977da1502c124ae93a27354d95d2d3f05fe62',
     nome: 'Suporte Portal',
-    role: 'Equipe de Suporte'
+    role: 'admin',
+    roleLabel: 'Equipe de Suporte'
+  },
+  {
+    email: 'stefano@newpc.com.br',
+    senhaHash: '15949b86e5ed814f1962bef4ad6977da1502c124ae93a27354d95d2d3f05fe62',
+    nome: 'Stefano',
+    role: 'vendedor',
+    roleLabel: 'Vendedor'
+  },
+  {
+    email: 'leonardo@newpc.com.br',
+    senhaHash: '15949b86e5ed814f1962bef4ad6977da1502c124ae93a27354d95d2d3f05fe62',
+    nome: 'Leonardo Gomes',
+    role: 'vendedor',
+    roleLabel: 'Vendedor'
   }
 ];
+
+/* ═══════════════════════════════════════════════
+   ROLES — definição centralizada
+═══════════════════════════════════════════════ */
+const ROLES = {
+  admin: {
+    label: 'Administrador',
+    icon: '👑',
+    cor: '#c9952a',
+    descricao: 'Acesso completo. Pode gerenciar usuários, propostas, catálogo e todos os módulos.'
+  },
+  vendedor: {
+    label: 'Vendedor',
+    icon: '💼',
+    cor: '#1b4876',
+    descricao: 'Cria/edita próprias propostas. Usa catálogo. Vê dashboard.'
+  },
+  operador: {
+    label: 'Operador',
+    icon: '👁',
+    cor: '#374151',
+    descricao: 'Apenas visualiza propostas. Sem edição. Acesso ao dashboard.'
+  },
+  visualizador: {
+    label: 'Visualizador',
+    icon: '🔍',
+    cor: '#7c3aed',
+    descricao: 'Acesso restrito ao Hub. Não acessa apps. Útil para convidados.'
+  }
+};
 
 /* ESTADO */
 let usuarioLogado = null;
@@ -946,8 +1498,8 @@ window.addEventListener('DOMContentLoaded', async () => {
   // Esconde tela de boot
   document.getElementById('bootScreen').classList.add('hidden');
 
-  // Verifica sessão
-  if (verificarSessao()) {
+  // Verifica sessão (agora async)
+  if (await verificarSessao()) {
     iniciarApp();
   } else {
     document.getElementById('loginScreen').classList.add('show');
@@ -974,9 +1526,26 @@ async function fazerLogin() {
   btnEl.textContent = 'Verificando...';
 
   try {
-    const usuario = USUARIOS_AUTORIZADOS.find(u => u.email.toLowerCase() === email);
+    // Tenta buscar usuário no Firebase primeiro (fonte oficial)
+    let usuario = await buscarUsuarioFirebase(email);
+
+    // Fallback: se não achar no Firebase, busca hardcoded (migração transparente)
+    if (!usuario) {
+      const hardcoded = USUARIOS_AUTORIZADOS.find(u => u.email.toLowerCase() === email);
+      if (hardcoded) {
+        usuario = { ...hardcoded, ativo: true, _fonte: 'hardcoded' };
+      }
+    }
+
     if (!usuario) {
       errorEl.textContent = 'E-mail não autorizado.';
+      errorEl.classList.add('show');
+      return;
+    }
+
+    // Verifica se está ativo
+    if (usuario.ativo === false) {
+      errorEl.textContent = 'Sua conta está desativada. Contate o administrador.';
       errorEl.classList.add('show');
       return;
     }
@@ -990,18 +1559,41 @@ async function fazerLogin() {
 
     usuarioLogado = usuario;
     localStorage.setItem('newpc_user', JSON.stringify({
-      email: usuario.email, nome: usuario.nome, role: usuario.role,
+      email: usuario.email,
+      nome: usuario.nome,
+      role: usuario.role,
+      roleLabel: usuario.roleLabel || ROLES[usuario.role]?.label || 'Usuário',
       loginAt: Date.now()
     }));
 
-    // Registra login na nuvem (estatística de acesso)
-    try {
-      await window.fbSetDoc(
-        window.fbDoc(window.fbDb, 'usuarios', usuario.email),
-        { ultimoLogin: window.fbServerTimestamp(), nome: usuario.nome, role: usuario.role },
-        { merge: true }
-      );
-    } catch(e) { console.warn('Falha ao registrar login na nuvem:', e); }
+    // Migra automaticamente se vier de hardcoded
+    if (usuario._fonte === 'hardcoded') {
+      try {
+        await window.fbSetDoc(
+          window.fbDoc(window.fbDb, 'usuarios', usuario.email),
+          {
+            email: usuario.email,
+            nome: usuario.nome,
+            senhaHash: usuario.senhaHash,
+            role: usuario.role,
+            roleLabel: usuario.roleLabel || ROLES[usuario.role]?.label || 'Usuário',
+            ativo: true,
+            criadoEm: window.fbServerTimestamp(),
+            ultimoLogin: window.fbServerTimestamp(),
+            criadoPor: 'migracao_automatica'
+          },
+          { merge: true }
+        );
+      } catch(e) { console.warn('Falha ao migrar usuário hardcoded:', e); }
+    } else {
+      // Atualiza só último login
+      try {
+        await window.fbUpdateDoc(
+          window.fbDoc(window.fbDb, 'usuarios', usuario.email),
+          { ultimoLogin: window.fbServerTimestamp() }
+        );
+      } catch(e) { console.warn('Falha ao atualizar último login:', e); }
+    }
 
     document.getElementById('loginScreen').classList.remove('show');
     iniciarApp();
@@ -1012,6 +1604,21 @@ async function fazerLogin() {
   } finally {
     btnEl.disabled = false;
     btnEl.textContent = 'Entrar';
+  }
+}
+
+/* ═══════════════════════════════════════════════
+   Busca usuário no Firestore (coleção 'usuarios')
+═══════════════════════════════════════════════ */
+async function buscarUsuarioFirebase(email) {
+  try {
+    const docRef = window.fbDoc(window.fbDb, 'usuarios', email);
+    const snap = await window.fbGetDoc(docRef);
+    if (!snap.exists()) return null;
+    return { ...snap.data(), _fonte: 'firebase' };
+  } catch (err) {
+    console.warn('Erro ao buscar usuário no Firebase:', err);
+    return null;
   }
 }
 
@@ -1027,7 +1634,7 @@ function fazerLogout() {
   document.getElementById('loginSenha').value = '';
 }
 
-function verificarSessao() {
+async function verificarSessao() {
   const raw = localStorage.getItem('newpc_user');
   if (!raw) return false;
   try {
@@ -1036,8 +1643,24 @@ function verificarSessao() {
       localStorage.removeItem('newpc_user');
       return false;
     }
-    const usuario = USUARIOS_AUTORIZADOS.find(u => u.email.toLowerCase() === sessao.email.toLowerCase());
+
+    // Busca primeiro no Firebase
+    let usuario = await buscarUsuarioFirebase(sessao.email);
+
+    // Fallback: hardcoded
+    if (!usuario) {
+      const hardcoded = USUARIOS_AUTORIZADOS.find(u => u.email.toLowerCase() === sessao.email.toLowerCase());
+      if (hardcoded) usuario = { ...hardcoded, ativo: true };
+    }
+
     if (!usuario) return false;
+
+    // Verifica ativo
+    if (usuario.ativo === false) {
+      localStorage.removeItem('newpc_user');
+      return false;
+    }
+
     usuarioLogado = usuario;
     return true;
   } catch { return false; }
@@ -1049,8 +1672,17 @@ function verificarSessao() {
 function iniciarApp() {
   document.getElementById('app').classList.add('show');
   document.getElementById('userEmail').textContent = usuarioLogado.nome;
-  document.getElementById('userRole').textContent = usuarioLogado.role;
+
+  // Label do role
+  const labelRole = usuarioLogado.roleLabel || ROLES[usuarioLogado.role]?.label || usuarioLogado.role || 'Usuário';
+  document.getElementById('userRole').textContent = labelRole;
   document.getElementById('userAvatar').textContent = usuarioLogado.nome.charAt(0).toUpperCase();
+
+  // Botão admin: só pra usuários admin
+  const btnAdmin = document.getElementById('btnAdminUsuarios');
+  if (btnAdmin) {
+    btnAdmin.style.display = (usuarioLogado.role === 'admin') ? 'inline-flex' : 'none';
+  }
 
   escutarApps();
   escutarAvisos();
@@ -1459,6 +2091,427 @@ window.selecionarIcone = selecionarIcone;
 window.selecionarCor = selecionarCor;
 window.fecharModal = fecharModal;
 window.renderApps = renderApps;
-</script>
+
+/* ═══════════════════════════════════════════════════════════════════
+   GERENCIAMENTO DE USUÁRIOS (ADMIN)
+═══════════════════════════════════════════════════════════════════ */
+let adminUsuariosCache = [];
+let adminEditandoEmail = null;
+
+async function abrirAdminUsuarios() {
+  // Só admin acessa
+  if (usuarioLogado.role !== 'admin') {
+    showToast('Apenas administradores podem acessar.', 'err');
+    return;
+  }
+
+  document.getElementById('modalAdminUsuarios').classList.add('show');
+  document.body.style.overflow = 'hidden';
+
+  // Reset abas
+  mudarTabAdmin('lista');
+
+  // Renderiza painel de roles
+  renderAdminRolesInfo();
+
+  // Carrega lista
+  await carregarUsuariosAdmin();
+}
+
+function fecharAdminUsuarios() {
+  document.getElementById('modalAdminUsuarios').classList.remove('show');
+  document.body.style.overflow = '';
+  // Reset form se estava aberto
+  cancelarFormUsuario();
+}
+
+function mudarTabAdmin(tab) {
+  document.querySelectorAll('.admin-tab').forEach(t => {
+    t.classList.toggle('active', t.dataset.tab === tab);
+  });
+  document.querySelectorAll('.admin-tab-content').forEach(c => {
+    c.classList.toggle('active', c.dataset.tabContent === tab);
+  });
+}
+
+/* ═══ CARREGAR LISTA ═══ */
+async function carregarUsuariosAdmin() {
+  const lista = document.getElementById('adminUsuariosList');
+  lista.innerHTML = '<div class="admin-loading">Carregando usuários...</div>';
+
+  try {
+    // 1. Pega todos do Firebase
+    const snap = await window.fbGetDocs(window.fbCol(window.fbDb, 'usuarios'));
+    const firebaseUsers = {};
+    snap.forEach(doc => {
+      firebaseUsers[doc.id] = { ...doc.data(), id: doc.id, _fonte: 'firebase' };
+    });
+
+    // 2. Adiciona hardcoded que ainda não foram migrados
+    USUARIOS_AUTORIZADOS.forEach(u => {
+      if (!firebaseUsers[u.email]) {
+        firebaseUsers[u.email] = {
+          ...u,
+          id: u.email,
+          ativo: true,
+          _fonte: 'hardcoded'
+        };
+      }
+    });
+
+    // 3. Converte pra array e ordena
+    adminUsuariosCache = Object.values(firebaseUsers).sort((a, b) => {
+      // Admin primeiro, depois alfabético
+      if (a.role === 'admin' && b.role !== 'admin') return -1;
+      if (a.role !== 'admin' && b.role === 'admin') return 1;
+      return (a.nome || a.email).localeCompare(b.nome || b.email);
+    });
+
+    renderUsuariosAdmin();
+  } catch (err) {
+    console.error('Erro ao carregar usuários:', err);
+    lista.innerHTML = `<div class="admin-empty"><span class="icon">⚠️</span>Erro ao carregar usuários: ${esc(err.message)}</div>`;
+  }
+}
+
+function filtrarUsuarios() { renderUsuariosAdmin(); }
+
+function renderUsuariosAdmin() {
+  const lista = document.getElementById('adminUsuariosList');
+  const busca = (document.getElementById('adminSearchUsers')?.value || '').trim().toLowerCase();
+  const filtroRole = document.getElementById('adminFilterRole')?.value || '';
+  const filtroStatus = document.getElementById('adminFilterStatus')?.value || '';
+
+  let usuarios = adminUsuariosCache.slice();
+
+  if (busca) {
+    usuarios = usuarios.filter(u =>
+      (u.nome || '').toLowerCase().includes(busca) ||
+      (u.email || '').toLowerCase().includes(busca)
+    );
+  }
+  if (filtroRole) usuarios = usuarios.filter(u => u.role === filtroRole);
+  if (filtroStatus === 'ativo') usuarios = usuarios.filter(u => u.ativo !== false);
+  if (filtroStatus === 'inativo') usuarios = usuarios.filter(u => u.ativo === false);
+
+  if (usuarios.length === 0) {
+    lista.innerHTML = `<div class="admin-empty"><span class="icon">👥</span>Nenhum usuário encontrado.</div>`;
+    return;
+  }
+
+  lista.innerHTML = usuarios.map(renderUserCard).join('');
+}
+
+function renderUserCard(u) {
+  const inicial = (u.nome || u.email || '?').charAt(0).toUpperCase();
+  const ativo = u.ativo !== false;
+  const ehEu = u.email && usuarioLogado && u.email.toLowerCase() === usuarioLogado.email.toLowerCase();
+  const role = u.role || 'visualizador';
+  const roleData = ROLES[role] || ROLES.visualizador;
+
+  return `
+    <div class="admin-user-card ${ativo ? '' : 'inativo'}">
+      <div class="admin-user-avatar">${esc(inicial)}</div>
+      <div class="admin-user-info">
+        <div class="admin-user-nome">
+          ${esc(u.nome || '(sem nome)')}
+          ${ehEu ? '<span class="admin-user-eu-tag">VOCÊ</span>' : ''}
+        </div>
+        <div class="admin-user-email">${esc(u.email)}</div>
+      </div>
+      <span class="admin-user-role-badge ${role}">${roleData.icon} ${esc(roleData.label)}</span>
+      <span class="admin-user-status ${ativo ? 'ativo' : 'inativo'}">${ativo ? '✅ Ativo' : '⛔ Inativo'}</span>
+      <div class="admin-user-actions">
+        <button onclick="editarUsuario('${esc(u.email)}')" title="Editar">✏️</button>
+        <button onclick="resetarSenhaUsuario('${esc(u.email)}')" title="Resetar senha">🔑</button>
+        <button onclick="alternarAtivoUsuario('${esc(u.email)}')" title="${ativo ? 'Desativar' : 'Ativar'}">${ativo ? '⛔' : '✅'}</button>
+        ${!ehEu ? `<button class="danger" onclick="excluirUsuarioAdmin('${esc(u.email)}')" title="Excluir">🗑</button>` : ''}
+      </div>
+    </div>
+  `;
+}
+
+/* ═══ FORMULÁRIO ═══ */
+function atualizarRoleDescricao() {
+  const role = document.getElementById('formRole').value;
+  const desc = document.getElementById('roleDescricao');
+  if (role && ROLES[role]) {
+    desc.textContent = ROLES[role].descricao;
+    desc.style.color = 'var(--cinza-5)';
+  } else {
+    desc.textContent = 'Selecione um role para ver descrição';
+    desc.style.color = 'var(--cinza-4)';
+  }
+}
+
+function abrirFormNovoUsuario() {
+  adminEditandoEmail = null;
+  const f = (id) => document.getElementById(id);
+  if (f('formUsuarioIdOriginal')) f('formUsuarioIdOriginal').value = '';
+  if (f('formNome')) f('formNome').value = '';
+  if (f('formEmail')) { f('formEmail').value = ''; f('formEmail').disabled = false; }
+  if (f('formRole')) f('formRole').value = '';
+  if (f('formRoleLabel')) f('formRoleLabel').value = '';
+  if (f('formSenha')) { f('formSenha').value = ''; f('formSenha').required = true; }
+  if (f('rowSenha')) f('rowSenha').style.display = '';
+  if (f('formAtivo')) f('formAtivo').checked = true;
+  if (f('btnSalvarUsuario')) f('btnSalvarUsuario').textContent = '💾 Cadastrar Usuário';
+  atualizarRoleDescricao();
+  mudarTabAdmin('cadastro');
+}
+
+function editarUsuario(email) {
+  const u = adminUsuariosCache.find(x => x.email === email);
+  if (!u) return showToast('Usuário não encontrado', 'err');
+
+  adminEditandoEmail = email;
+  document.getElementById('formUsuarioIdOriginal').value = email;
+  document.getElementById('formNome').value = u.nome || '';
+  document.getElementById('formEmail').value = u.email || '';
+  document.getElementById('formEmail').disabled = true; // email não muda
+  document.getElementById('formRole').value = u.role || '';
+  document.getElementById('formRoleLabel').value = u.roleLabel || '';
+  document.getElementById('formSenha').value = '';
+  document.getElementById('formSenha').required = false;
+  document.getElementById('rowSenha').style.display = 'none';
+  document.getElementById('formAtivo').checked = (u.ativo !== false);
+  document.getElementById('btnSalvarUsuario').textContent = '💾 Salvar Alterações';
+  atualizarRoleDescricao();
+  mudarTabAdmin('cadastro');
+}
+
+function cancelarFormUsuario() {
+  adminEditandoEmail = null;
+  document.getElementById('formUsuarioIdOriginal').value = '';
+  document.getElementById('formNome').value = '';
+  document.getElementById('formEmail').value = '';
+  document.getElementById('formEmail').disabled = false;
+  document.getElementById('formRole').value = '';
+  document.getElementById('formRoleLabel').value = '';
+  document.getElementById('formSenha').value = '';
+  document.getElementById('formSenha').required = true;
+  document.getElementById('rowSenha').style.display = '';
+  document.getElementById('formAtivo').checked = true;
+  document.getElementById('btnSalvarUsuario').textContent = '💾 Cadastrar Usuário';
+  mudarTabAdmin('lista');
+}
+
+async function salvarUsuario(event) {
+  event.preventDefault();
+  const btn = document.getElementById('btnSalvarUsuario');
+
+  const nome = document.getElementById('formNome').value.trim();
+  const email = document.getElementById('formEmail').value.trim().toLowerCase();
+  const role = document.getElementById('formRole').value;
+  const roleLabel = document.getElementById('formRoleLabel').value.trim();
+  const senha = document.getElementById('formSenha').value;
+  const ativo = document.getElementById('formAtivo').checked;
+
+  if (!nome || !email || !role) {
+    showToast('Preencha os campos obrigatórios', 'err');
+    return;
+  }
+
+  // Valida email
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    showToast('E-mail inválido', 'err');
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Salvando...';
+
+  try {
+    const isEdit = adminEditandoEmail !== null;
+    const dados = {
+      email: email,
+      nome: nome,
+      role: role,
+      roleLabel: roleLabel || ROLES[role].label,
+      ativo: ativo,
+      atualizadoEm: window.fbServerTimestamp(),
+      atualizadoPor: usuarioLogado.email
+    };
+
+    if (!isEdit) {
+      // CADASTRO: precisa de senha
+      if (!senha || senha.length < 6) {
+        showToast('Senha precisa ter no mínimo 6 caracteres', 'err');
+        btn.disabled = false;
+        btn.textContent = '💾 Cadastrar Usuário';
+        return;
+      }
+
+      // Verifica se já existe
+      const exists = adminUsuariosCache.find(u => u.email.toLowerCase() === email);
+      if (exists) {
+        showToast('Já existe um usuário com esse e-mail', 'err');
+        btn.disabled = false;
+        btn.textContent = '💾 Cadastrar Usuário';
+        return;
+      }
+
+      dados.senhaHash = await sha256(senha);
+      dados.criadoEm = window.fbServerTimestamp();
+      dados.criadoPor = usuarioLogado.email;
+    } else if (senha && senha.length >= 6) {
+      // EDIÇÃO com senha nova
+      dados.senhaHash = await sha256(senha);
+    }
+
+    // Salva
+    await window.fbSetDoc(
+      window.fbDoc(window.fbDb, 'usuarios', email),
+      dados,
+      { merge: true }
+    );
+
+    showToast(isEdit ? '✓ Usuário atualizado' : '✓ Usuário cadastrado', 'ok');
+    cancelarFormUsuario();
+    await carregarUsuariosAdmin();
+
+  } catch (err) {
+    console.error('Erro ao salvar usuário:', err);
+    showToast('Erro ao salvar: ' + err.message, 'err');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = adminEditandoEmail ? '💾 Salvar Alterações' : '💾 Cadastrar Usuário';
+  }
+}
+
+/* ═══ AÇÕES ═══ */
+async function alternarAtivoUsuario(email) {
+  const u = adminUsuariosCache.find(x => x.email === email);
+  if (!u) return;
+
+  const ehEu = email.toLowerCase() === usuarioLogado.email.toLowerCase();
+  if (ehEu) {
+    showToast('Você não pode desativar a si mesmo', 'err');
+    return;
+  }
+
+  const novoEstado = u.ativo === false;
+  const acao = novoEstado ? 'ativar' : 'desativar';
+  if (!confirm(`Deseja realmente ${acao} ${u.nome}?`)) return;
+
+  try {
+    await window.fbSetDoc(
+      window.fbDoc(window.fbDb, 'usuarios', email),
+      {
+        email: email,
+        nome: u.nome,
+        senhaHash: u.senhaHash,
+        role: u.role,
+        roleLabel: u.roleLabel || ROLES[u.role]?.label || 'Usuário',
+        ativo: novoEstado,
+        atualizadoEm: window.fbServerTimestamp(),
+        atualizadoPor: usuarioLogado.email
+      },
+      { merge: true }
+    );
+
+    showToast(novoEstado ? '✓ Usuário ativado' : '✓ Usuário desativado', 'ok');
+    await carregarUsuariosAdmin();
+  } catch (err) {
+    showToast('Erro: ' + err.message, 'err');
+  }
+}
+
+async function resetarSenhaUsuario(email) {
+  const u = adminUsuariosCache.find(x => x.email === email);
+  if (!u) return;
+
+  const novaSenha = prompt(`Digite a nova senha para ${u.nome}:\n(mínimo 6 caracteres)`);
+  if (!novaSenha) return;
+  if (novaSenha.length < 6) {
+    showToast('Senha precisa ter no mínimo 6 caracteres', 'err');
+    return;
+  }
+
+  try {
+    const senhaHash = await sha256(novaSenha);
+    await window.fbSetDoc(
+      window.fbDoc(window.fbDb, 'usuarios', email),
+      {
+        email: email,
+        nome: u.nome,
+        role: u.role,
+        roleLabel: u.roleLabel || ROLES[u.role]?.label,
+        ativo: u.ativo !== false,
+        senhaHash: senhaHash,
+        senhaResetadaEm: window.fbServerTimestamp(),
+        senhaResetadaPor: usuarioLogado.email
+      },
+      { merge: true }
+    );
+
+    showToast('✓ Senha redefinida! Compartilhe com o usuário com segurança.', 'ok');
+    await carregarUsuariosAdmin();
+  } catch (err) {
+    showToast('Erro: ' + err.message, 'err');
+  }
+}
+
+async function excluirUsuarioAdmin(email) {
+  const u = adminUsuariosCache.find(x => x.email === email);
+  if (!u) return;
+
+  const ehEu = email.toLowerCase() === usuarioLogado.email.toLowerCase();
+  if (ehEu) {
+    showToast('Você não pode excluir a si mesmo', 'err');
+    return;
+  }
+
+  if (!confirm(`⚠️ EXCLUIR PERMANENTEMENTE ${u.nome}?\n\nEssa ação não pode ser desfeita.\nO usuário perderá o acesso imediatamente.`)) return;
+
+  try {
+    await window.fbDeleteDoc(window.fbDoc(window.fbDb, 'usuarios', email));
+    showToast('✓ Usuário excluído', 'ok');
+    await carregarUsuariosAdmin();
+  } catch (err) {
+    showToast('Erro: ' + err.message, 'err');
+  }
+}
+
+/* ═══ ROLES INFO ═══ */
+function renderAdminRolesInfo() {
+  const container = document.getElementById('adminRolesInfo');
+  container.innerHTML = Object.entries(ROLES).map(([key, r]) => `
+    <div class="admin-role-card ${key}">
+      <div class="admin-role-icon">${r.icon}</div>
+      <div class="admin-role-text">
+        <strong>${esc(r.label)}</strong>
+        <span>${esc(r.descricao)}</span>
+      </div>
+    </div>
+  `).join('');
+}
+
+/* ═══ Detectar quando muda pra tab cadastro pra resetar form ═══ */
+function mudarTabAdminPublic(tab) {
+  // Se tá indo pra "cadastro" sem estar editando, abre como novo
+  if (tab === 'cadastro' && !adminEditandoEmail) {
+    document.getElementById('formUsuarioIdOriginal').value = '';
+    document.getElementById('formEmail').disabled = false;
+    document.getElementById('formSenha').required = true;
+    document.getElementById('rowSenha').style.display = '';
+    document.getElementById('btnSalvarUsuario').textContent = '💾 Cadastrar Usuário';
+  }
+  mudarTabAdmin(tab);
+}
+
+// Expor funções de admin
+window.abrirAdminUsuarios = abrirAdminUsuarios;
+window.fecharAdminUsuarios = fecharAdminUsuarios;
+window.mudarTabAdmin = mudarTabAdminPublic;
+window.abrirFormNovoUsuarioPublico = abrirFormNovoUsuario;
+window.filtrarUsuarios = filtrarUsuarios;
+window.editarUsuario = editarUsuario;
+window.cancelarFormUsuario = cancelarFormUsuario;
+window.salvarUsuario = salvarUsuario;
+window.alternarAtivoUsuario = alternarAtivoUsuario;
+window.resetarSenhaUsuario = resetarSenhaUsuario;
+window.excluirUsuarioAdmin = excluirUsuarioAdmin;
+window.atualizarRoleDescricao = atualizarRoleDescricao;</script>
 </body>
 </html>
