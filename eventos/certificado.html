@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Meu Certificado · Portal do Educador</title>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+:root{--navy:#0F2C4A;--navy2:#1E324A;--green:#1A6B2A;--green2:#2DA68C;--cyan:#37B1DA;--lime:#B6D752;--paper:#FBFAF7;--ink:#16202e;--muted:#6b7785;--line:#e3e0d8;}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:radial-gradient(1000px 500px at 100% -10%,rgba(55,177,218,.13),transparent 60%),radial-gradient(900px 450px at -10% 110%,rgba(45,166,140,.13),transparent 55%),var(--paper);color:var(--ink);min-height:100vh;padding:24px}
+.box{max-width:460px;margin:36px auto;background:#fff;border:1px solid var(--line);border-radius:18px;box-shadow:0 16px 44px rgba(15,44,74,.1);overflow:hidden}
+.head{background:linear-gradient(120deg,var(--navy),var(--navy2));color:#fff;padding:28px;text-align:center;border-bottom:3px solid var(--lime)}
+.head h1{font-size:20px;font-weight:700}.head p{font-size:13px;opacity:.8;margin-top:4px}
+.body{padding:28px}
+label{display:block;font-size:12.5px;font-weight:600;color:var(--navy);margin:0 0 6px}
+input{width:100%;padding:12px 14px;border:1.5px solid var(--line);border-radius:10px;font-size:15px;background:var(--paper)}
+input:focus{outline:none;border-color:var(--cyan);background:#fff;box-shadow:0 0 0 3px rgba(55,177,218,.12)}
+.btn{width:100%;padding:14px;border:none;border-radius:11px;font-size:15px;font-weight:700;cursor:pointer;background:linear-gradient(135deg,var(--green),var(--green2));color:#fff;margin-top:20px;box-shadow:0 8px 20px rgba(26,107,42,.28)}
+.btn:disabled{opacity:.55}
+.msg{margin-top:16px;padding:12px 14px;border-radius:10px;font-size:13.5px;display:none;line-height:1.5}
+.msg.show{display:block}
+.msg.err{background:rgba(214,69,69,.1);color:#b53636;border:1px solid rgba(214,69,69,.25)}
+.msg.ok{background:rgba(45,166,140,.12);color:var(--green);border:1px solid rgba(45,166,140,.3)}
+.foot{text-align:center;font-size:11px;color:var(--muted);padding:0 28px 22px}
+.hint{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.5}
+</style>
+</head>
+<body>
+<div class="box">
+  <div class="head"><h1>Meu Certificado</h1><p>Portal do Educador</p></div>
+  <div class="body">
+    <label>E-mail OU código de inscrição</label>
+    <input id="chave" placeholder="seu@email.com ou INS-XXXX">
+    <button class="btn" id="btn">Buscar e baixar certificado</button>
+    <div class="msg" id="msg"></div>
+    <p class="hint">Disponível apenas para participantes que tiveram presença confirmada no evento.</p>
+  </div>
+  <p class="foot">NEWPC Tecnologia LTDA · CNPJ 20.892.343/0001-15</p>
+</div>
+<canvas id="cv" width="1414" height="1000" style="display:none"></canvas>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyCHLrwHDUsVKKyIgHlbpkWsv1dOTBfY52M",
+  authDomain: "portal-do-educador-interno.firebaseapp.com",
+  projectId: "portal-do-educador-interno",
+  storageBucket: "portal-do-educador-interno.firebasestorage.app",
+  messagingSenderId: "133947200175",
+  appId: "1:133947200175:web:a819a5a7c1196544d97a5a"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+const $ = id=>document.getElementById(id);
+const eventoId = new URLSearchParams(location.search).get('evento');
+let evento=null, logoImg=new Image(), logoReady=false;
+const LOGO_SRC="";
+if(LOGO_SRC){logoImg.onload=()=>logoReady=true;logoImg.src=LOGO_SRC;}
+
+function msg(t,tipo){const m=$('msg');m.className='msg show '+tipo;m.textContent=t;}
+function quebrar(ctx,t,maxW){const ps=t.split(' ');const ls=[];let a='';ps.forEach(p=>{const x=a?a+' '+p:p;if(ctx.measureText(x).width>maxW&&a){ls.push(a);a=p;}else a=x;});if(a)ls.push(a);return ls;}
+function sanitizar(s){return (s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-zA-Z0-9]+/g,'_').slice(0,40);}
+
+function desenhar(ctx,nome,codigo){
+  const W=1414,H=1000;ctx.clearRect(0,0,W,H);
+  ctx.fillStyle='#FBFAF7';ctx.fillRect(0,0,W,H);
+  ctx.strokeStyle='#0F2C4A';ctx.lineWidth=6;ctx.strokeRect(34,34,W-68,H-68);
+  ctx.strokeStyle='#37B1DA';ctx.lineWidth=2;ctx.strokeRect(48,48,W-96,H-96);
+  ctx.fillStyle='#0F2C4A';ctx.fillRect(34,34,18,H-68);ctx.fillStyle='#B6D752';ctx.fillRect(52,34,6,H-68);
+  ctx.textAlign='center';
+  if(logoReady){const ls=92,ly=70;ctx.save();ctx.beginPath();ctx.arc(W/2,ly+ls/2,ls/2,0,7);ctx.fillStyle='#0F2C4A';ctx.fill();ctx.clip();ctx.drawImage(logoImg,W/2-ls/2,ly,ls,ls);ctx.restore();ctx.strokeStyle='#37B1DA';ctx.lineWidth=2.5;ctx.beginPath();ctx.arc(W/2,ly+ls/2,ls/2,0,7);ctx.stroke();}
+  ctx.fillStyle='#1A6B2A';ctx.font='800 30px Segoe UI,sans-serif';ctx.fillText((evento.marca||'PORTAL DO EDUCADOR').toUpperCase(),W/2,logoReady?210:160);
+  ctx.fillStyle='#6b7785';ctx.font='600 15px Segoe UI,sans-serif';ctx.fillText('FORMAÇÃO CONTINUADA DE PROFESSORES',W/2,logoReady?238:188);
+  ctx.fillStyle='#0F2C4A';ctx.font='800 52px Georgia,serif';ctx.fillText('CERTIFICADO',W/2,300);
+  ctx.strokeStyle='#37B1DA';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(W/2-90,318);ctx.lineTo(W/2+90,318);ctx.stroke();
+  ctx.fillStyle='#1A6B2A';ctx.font='italic 700 48px Georgia,serif';ctx.fillText(nome,W/2,402);
+  ctx.strokeStyle='#e3e0d8';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(W/2-380,425);ctx.lineTo(W/2+380,425);ctx.stroke();
+  const corpo=(evento.corpo||'Certificamos que {nome} participou e concluiu com aproveitamento o curso {curso}, com carga horária de {carga}, promovido pelo Portal do Educador.')
+    .replace(/{nome}/g,nome).replace(/{curso}/g,evento.curso||'').replace(/{carga}/g,evento.carga||'');
+  ctx.fillStyle='#16202e';ctx.font='400 22px Segoe UI,sans-serif';let y=490;quebrar(ctx,corpo,920).forEach(l=>{ctx.fillText(l,W/2,y);y+=34;});
+  ctx.fillStyle='#6b7785';ctx.font='600 18px Segoe UI,sans-serif';ctx.fillText(evento.data||'',W/2,y+30);
+  if(evento.respaldo){ctx.fillStyle='#1c6e8c';ctx.font='italic 600 14px Segoe UI,sans-serif';let ry=y+58;quebrar(ctx,evento.respaldo,900).forEach(l=>{ctx.fillText(l,W/2,ry);ry+=20;});}
+  const ay=820;
+  [[evento.ass1nome||'',evento.ass1cargo||'',W*0.32],[evento.ass2nome||'',evento.ass2cargo||'',W*0.68]].forEach(([n,c,x])=>{
+    ctx.strokeStyle='#0F2C4A';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(x-150,ay);ctx.lineTo(x+150,ay);ctx.stroke();
+    ctx.fillStyle='#0F2C4A';ctx.font='700 19px Segoe UI,sans-serif';ctx.fillText(n,x,ay+30);
+    ctx.fillStyle='#6b7785';ctx.font='400 15px Segoe UI,sans-serif';ctx.fillText(c,x,ay+52);
+  });
+  ctx.fillStyle='#0F2C4A';ctx.font='600 14px Segoe UI,sans-serif';ctx.fillText(evento.instituicao||'Uma solução NEWPC Tecnologia LTDA · CNPJ 20.892.343/0001-15',W/2,H-110);
+  ctx.fillStyle='#37B1DA';ctx.font='700 14px IBM Plex Mono,monospace';ctx.fillText('CÓDIGO DE AUTENTICAÇÃO: '+codigo,W/2,H-78);
+}
+
+$('btn').onclick=async()=>{
+  const chave=$('chave').value.trim();
+  if(!chave){msg('Informe seu e-mail ou código.','err');return;}
+  if(!eventoId){msg('Link inválido: evento não informado.','err');return;}
+  $('btn').disabled=true;$('btn').textContent='Buscando...';$('msg').className='msg';
+  try{
+    if(!evento){ const ev=await db.collection('eventos').doc(eventoId).get(); evento=ev.exists?ev.data():null; }
+    if(!evento){ msg('Evento não encontrado.','err'); reset(); return; }
+    const col=db.collection('eventos').doc(eventoId).collection('inscritos');
+    // busca por e-mail OU por código de inscrição
+    let q = await col.where('email','==',chave.toLowerCase()).limit(1).get();
+    if(q.empty) q = await col.where('codigoInscricao','==',chave.toUpperCase()).limit(1).get();
+    if(q.empty){ msg('Não encontramos sua inscrição neste evento.','err'); reset(); return; }
+    const insc=q.docs[0].data();
+    if(!insc.presente){ msg('Sua presença não foi confirmada no credenciamento. Procure a organização do evento.','err'); reset(); return; }
+    const cod = insc.codigoCert || 'PENDENTE';
+    if(cod==='PENDENTE'){ msg('Seu certificado ainda não foi liberado pela organização. Tente novamente em breve.','err'); reset(); return; }
+    // gera e baixa
+    const {jsPDF}=window.jspdf;
+    desenhar($('cv').getContext('2d'),insc.nome,cod);
+    const pdf=new jsPDF({orientation:'landscape',unit:'mm',format:'a4'});
+    pdf.addImage($('cv').toDataURL('image/jpeg',0.92),'JPEG',0,0,297,210);
+    pdf.save(`Certificado_${sanitizar(insc.nome)}.pdf`);
+    msg('Certificado gerado! Verifique seus downloads.','ok');
+  }catch(e){ msg('Erro ao buscar. Verifique sua conexão.','err'); }
+  reset();
+};
+function reset(){$('btn').disabled=false;$('btn').textContent='Buscar e baixar certificado';}
+</script>
+</body>
+</html>

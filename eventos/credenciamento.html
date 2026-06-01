@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Credenciamento · Portal do Educador</title>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<style>
+:root{--navy:#0F2C4A;--navy2:#1E324A;--green:#1A6B2A;--green2:#2DA68C;--cyan:#37B1DA;--lime:#B6D752;--paper:#FBFAF7;--ink:#16202e;--muted:#6b7785;--line:#e3e0d8;}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--paper);color:var(--ink);min-height:100vh}
+.topbar{background:linear-gradient(120deg,var(--navy),var(--navy2));color:#fff;padding:18px 22px;display:flex;align-items:center;justify-content:space-between;border-bottom:3px solid var(--lime)}
+.topbar h1{font-size:16px;font-weight:700}.topbar .ev{font-size:12px;opacity:.8}
+.logout{background:rgba(255,255,255,.12);border:none;color:#fff;padding:7px 12px;border-radius:8px;font-size:12px;cursor:pointer}
+.wrap{max-width:560px;margin:22px auto;padding:0 18px}
+.card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:20px;box-shadow:0 8px 24px rgba(15,44,74,.06);margin-bottom:18px}
+.card h2{font-size:12px;text-transform:uppercase;letter-spacing:1.2px;color:var(--navy);margin-bottom:14px;font-weight:700}
+.stats{display:flex;gap:10px;margin-bottom:18px}
+.stat{flex:1;background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px;text-align:center}
+.stat .n{font-size:26px;font-weight:800;color:var(--navy)}.stat .l{font-size:11px;color:var(--muted);margin-top:2px}
+.stat.pres .n{color:var(--green)}
+input{width:100%;padding:14px;border:1.5px solid var(--line);border-radius:10px;font-size:18px;font-family:inherit;background:var(--paper);text-align:center;letter-spacing:1px}
+input:focus{outline:none;border-color:var(--cyan);background:#fff;box-shadow:0 0 0 3px rgba(55,177,218,.12)}
+.cpf-big{font-size:22px;font-weight:700}
+.btn{width:100%;padding:14px;border:none;border-radius:11px;font-size:15px;font-weight:700;cursor:pointer;transition:.15s}
+.btn-primary{background:linear-gradient(135deg,var(--green),var(--green2));color:#fff;box-shadow:0 8px 20px rgba(26,107,42,.28);margin-top:12px}
+.btn-cyan{background:linear-gradient(135deg,var(--cyan),var(--green2));color:#fff;margin-top:10px}
+.btn-ghost{background:var(--paper);border:1.5px solid var(--line);color:var(--navy);margin-top:10px}
+.painel{margin-top:16px;display:none}
+.painel.show{display:block}
+.achado{border:2px solid var(--green);border-radius:14px;padding:18px;text-align:center;background:rgba(45,166,140,.06)}
+.achado .nm{font-size:22px;font-weight:800;color:var(--navy)}
+.achado .sub{font-size:13px;color:var(--muted);margin-top:4px}
+.achado .badge{display:inline-block;margin-top:10px;font-size:12px;font-weight:700;padding:6px 14px;border-radius:20px;background:rgba(45,166,140,.16);color:var(--green)}
+.naoachado{border:2px solid #e0b84d;border-radius:14px;padding:18px;text-align:center;background:rgba(224,184,77,.08)}
+.naoachado .t{font-weight:700;color:#9a6f12;font-size:15px}
+.naoachado .s{font-size:13px;color:var(--muted);margin-top:6px;line-height:1.5}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--navy);color:#fff;padding:14px 22px;border-radius:12px;font-size:14px;font-weight:600;box-shadow:0 10px 30px rgba(0,0,0,.3);display:none;z-index:99;max-width:90%;text-align:center}
+.toast.show{display:block}.toast.ok{background:var(--green)}.toast.warn{background:#c98a1a}.toast.err{background:#b53636}
+#reader{border-radius:12px;overflow:hidden;border:1px solid var(--line);margin-bottom:8px}
+.divider{text-align:center;font-size:11px;color:var(--muted);margin:14px 0;text-transform:uppercase;letter-spacing:1px}
+#login{max-width:380px;margin:60px auto;padding:0 18px}
+.muted{font-size:12px;color:var(--muted);text-align:center;margin-top:10px;line-height:1.5}
+label{font-size:12px;font-weight:600;color:var(--navy);display:block;margin:14px 0 6px}
+#login input{text-align:left;font-size:15px;letter-spacing:0}
+
+/* ===== ETIQUETA 80x50mm ===== */
+#etiqueta-area{position:fixed;left:-9999px;top:0}
+.etiqueta{width:80mm;height:50mm;padding:4mm;display:flex;align-items:center;gap:3mm;background:#fff;color:#000;font-family:'Segoe UI',sans-serif;box-sizing:border-box}
+.etiqueta .lado-q{flex-shrink:0}
+.etiqueta .lado-q canvas,.etiqueta .lado-q img{width:34mm!important;height:34mm!important}
+.etiqueta .lado-t{flex:1;min-width:0}
+.etiqueta .ev{font-size:9pt;font-weight:700;color:#0F2C4A;text-transform:uppercase;letter-spacing:.3px;line-height:1.1;margin-bottom:2mm}
+.etiqueta .nm{font-size:15pt;font-weight:800;color:#000;line-height:1.05;word-break:break-word}
+.etiqueta .cd{font-size:8pt;font-family:'Courier New',monospace;color:#0F2C4A;margin-top:2mm}
+.etiqueta .br{font-size:6.5pt;color:#555;margin-top:1mm}
+
+@media print{
+  @page{size:80mm 50mm;margin:0}
+  body *{visibility:hidden}
+  #etiqueta-area,#etiqueta-area *{visibility:visible}
+  #etiqueta-area{position:absolute;left:0;top:0}
+  .etiqueta{page-break-after:always}
+}
+</style>
+</head>
+<body>
+
+<div id="login" style="display:none">
+  <div class="card">
+    <h2 style="text-align:center">Acesso restrito · Credenciamento</h2>
+    <label>E-mail</label><input id="loginEmail" type="email" placeholder="suporte@portaldoeducador.com.br">
+    <label>Senha</label><input id="loginSenha" type="password" placeholder="********">
+    <button class="btn btn-cyan" style="margin-top:18px" id="btnLogin">Entrar</button>
+    <p class="muted" id="loginMsg"></p>
+  </div>
+</div>
+
+<div id="app" style="display:none">
+  <div class="topbar">
+    <div><h1>Credenciamento</h1><div class="ev" id="evNome">—</div></div>
+    <button class="logout" id="btnLogout">Sair</button>
+  </div>
+
+  <div class="wrap">
+    <div class="stats">
+      <div class="stat"><div class="n" id="nInscritos">0</div><div class="l">Inscritos</div></div>
+      <div class="stat pres"><div class="n" id="nPresentes">0</div><div class="l">Presentes</div></div>
+    </div>
+
+    <div class="card">
+      <h2>Credenciar por CPF</h2>
+      <input id="cpf" class="cpf-big" inputmode="numeric" placeholder="000.000.000-00" maxlength="14" autocomplete="off">
+      <button class="btn btn-primary" id="btnBuscar">Validar inscrição</button>
+
+      <div class="painel" id="painel"></div>
+
+      <div class="divider">ou leia o QR de inscrição</div>
+      <div id="reader"></div>
+      <button class="btn btn-ghost" id="btnScan">Iniciar câmera</button>
+    </div>
+
+    <div class="card">
+      <h2>Busca por nome (backup)</h2>
+      <input id="busca" style="text-align:left;font-size:15px;letter-spacing:0" placeholder="Digite parte do nome">
+      <div id="resultNome"></div>
+    </div>
+  </div>
+</div>
+
+<div id="etiqueta-area"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyCHLrwHDUsVKKyIgHlbpkWsv1dOTBfY52M",
+  authDomain: "portal-do-educador-interno.firebaseapp.com",
+  projectId: "portal-do-educador-interno",
+  storageBucket: "portal-do-educador-interno.firebasestorage.app",
+  messagingSenderId: "133947200175",
+  appId: "1:133947200175:web:a819a5a7c1196544d97a5a"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+const $ = id => document.getElementById(id);
+const eventoId = new URLSearchParams(location.search).get('evento');
+let evento = null, inscritosCache = [], scanner = null, usuarioLogado = null;
+
+function toast(t,tipo='ok'){const el=$('toast');el.className='toast show '+tipo;el.textContent=t;setTimeout(()=>el.classList.remove('show'),2200);}
+function esc(s){return (s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+function soDigitos(s){return (s||'').replace(/\D/g,'');}
+
+/* ---- Auth via coleção 'usuarios' (mesmo login do Hub) ---- */
+async function sha256(txt){
+  const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(txt));
+  return [...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+async function fazerLogin(){
+  const email=$('loginEmail').value.trim().toLowerCase();
+  const senha=$('loginSenha').value;
+  if(!email||!senha){$('loginMsg').textContent='Preencha e-mail e senha.';$('loginMsg').style.color='#b53636';return;}
+  $('btnLogin').disabled=true;
+  try{
+    const doc=await db.collection('usuarios').doc(email).get();
+    if(!doc.exists){ falhaLogin(); return; }
+    const u=doc.data();
+    if(u.ativo===false){ $('loginMsg').textContent='Usuário inativo.';$('loginMsg').style.color='#b53636';$('btnLogin').disabled=false;return; }
+    if(await sha256(senha)!==u.senhaHash){ falhaLogin(); return; }
+    usuarioLogado={email, nome:u.nome||email, role:u.role||''};
+    $('login').style.display='none';$('app').style.display='block';
+    iniciar();
+  }catch(e){ $('loginMsg').textContent='Erro ao conectar. Tente novamente.';$('loginMsg').style.color='#b53636'; }
+  $('btnLogin').disabled=false;
+}
+function falhaLogin(){$('loginMsg').textContent='E-mail ou senha incorretos.';$('loginMsg').style.color='#b53636';$('btnLogin').disabled=false;}
+
+window.addEventListener('DOMContentLoaded',()=>{ $('login').style.display='block';$('app').style.display='none'; });
+$('btnLogin').onclick=fazerLogin;
+$('loginSenha').addEventListener('keydown',e=>{if(e.key==='Enter')fazerLogin();});
+$('btnLogout').onclick=()=>{if(scanner)scanner.stop().catch(()=>{});usuarioLogado=null;location.reload();};
+
+/* ---- App init ---- */
+async function iniciar(){
+  if(!eventoId){$('evNome').textContent='Evento não informado no link';return;}
+  const ev=await db.collection('eventos').doc(eventoId).get();
+  evento = ev.exists?ev.data():null;
+  $('evNome').textContent = evento ? (evento.nomeEvento||evento.curso||'Evento') : 'Evento não encontrado';
+  db.collection('eventos').doc(eventoId).collection('inscritos').onSnapshot(snap=>{
+    inscritosCache = snap.docs.map(d=>({id:d.id,...d.data()}));
+    $('nInscritos').textContent = inscritosCache.length;
+    $('nPresentes').textContent = inscritosCache.filter(i=>i.presente).length;
+    if($('busca').value.trim()) buscarNome();
+  });
+}
+
+/* ---- Máscara CPF ---- */
+$('cpf').oninput=e=>{
+  let v=soDigitos(e.target.value).slice(0,11);
+  v=v.replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})(\d{1,2})$/,'$1-$2');
+  e.target.value=v;
+};
+$('cpf').onkeydown=e=>{ if(e.key==='Enter') $('btnBuscar').click(); };
+
+/* ---- Marcar presença ---- */
+async function marcarPresenca(insc){
+  if(!insc.presente){
+    try{
+      await db.collection('eventos').doc(eventoId).collection('inscritos').doc(insc.id).update({
+        presente:true, checkinEm: firebase.firestore.FieldValue.serverTimestamp()
+      });
+      insc.presente=true;
+      toast('✓ '+insc.nome+' creditado','ok');
+    }catch(e){ toast('Erro ao marcar presença','err'); return false; }
+  }else{
+    toast(insc.nome+' já estava presente','warn');
+  }
+  return true;
+}
+
+/* ---- Validar por CPF ---- */
+$('btnBuscar').onclick=async()=>{
+  const cpf=soDigitos($('cpf').value);
+  if(cpf.length!==11){toast('Digite os 11 números do CPF','warn');return;}
+  const insc=inscritosCache.find(i=>i.cpf===cpf);
+  if(!insc){ mostrarNaoEncontrado(cpf); return; }
+  const ok=await marcarPresenca(insc);
+  if(ok) mostrarAchado(insc);
+};
+
+function mostrarAchado(insc){
+  const p=$('painel'); p.className='painel show';
+  p.innerHTML=`<div class="achado">
+    <div class="nm">${esc(insc.nome)}</div>
+    <div class="sub">${esc(insc.escola||'')} ${insc.municipio?'· '+esc(insc.municipio):''}</div>
+    <div class="badge">Presença confirmada</div>
+    <button class="btn btn-primary" id="btnEtiqueta">Imprimir etiqueta</button>
+    <button class="btn btn-ghost" id="btnLimpar">Próximo</button>
+  </div>`;
+  $('btnEtiqueta').onclick=()=>imprimirEtiqueta(insc);
+  $('btnLimpar').onclick=limpar;
+}
+
+function mostrarNaoEncontrado(cpf){
+  const p=$('painel'); p.className='painel show';
+  p.innerHTML=`<div class="naoachado">
+    <div class="t">CPF sem inscrição neste evento</div>
+    <div class="s">Esta pessoa não se inscreveu previamente. Você pode inscrevê-la na hora (walk-in) abrindo a tela de inscrição, ou buscar por nome abaixo caso tenha usado outro CPF.</div>
+    <button class="btn btn-ghost" id="btnLimpar2">Fechar</button>
+  </div>`;
+  $('btnLimpar2').onclick=limpar;
+}
+
+function limpar(){ $('painel').className='painel'; $('cpf').value=''; $('cpf').focus(); }
+
+/* ---- Impressão de etiqueta 80x50mm ---- */
+function imprimirEtiqueta(insc){
+  const area=$('etiqueta-area');
+  area.innerHTML='';
+  const et=document.createElement('div');
+  et.className='etiqueta';
+  const qDiv=document.createElement('div'); qDiv.className='lado-q';
+  const tDiv=document.createElement('div'); tDiv.className='lado-t';
+  const evNome = evento ? (evento.nomeEvento||evento.curso||'') : '';
+  tDiv.innerHTML=`<div class="ev">${esc(evNome)}</div>
+    <div class="nm">${esc(insc.nome)}</div>
+    <div class="cd">${esc(insc.codigoInscricao||'')}</div>
+    <div class="br">Portal do Educador · NEWPC</div>`;
+  et.appendChild(qDiv); et.appendChild(tDiv);
+  area.appendChild(et);
+  // QR com nome + evento + código
+  const payload = JSON.stringify({n:insc.nome, e:evNome, c:insc.codigoInscricao||''});
+  new QRCode(qDiv,{text:payload,width:160,height:160,colorDark:'#000000',colorLight:'#ffffff'});
+  setTimeout(()=>window.print(),250);
+}
+
+/* ---- Scanner QR (leitura do QR de inscrição) ---- */
+$('btnScan').onclick=async()=>{
+  if(scanner){await scanner.stop().catch(()=>{});scanner=null;$('btnScan').textContent='Iniciar câmera';return;}
+  scanner=new Html5Qrcode('reader');$('btnScan').textContent='Parar câmera';
+  try{
+    await scanner.start({facingMode:'environment'},{fps:10,qrbox:200},async code=>{
+      // o QR de inscrição contém o codigoInscricao puro
+      let cod=code;
+      try{ const o=JSON.parse(code); if(o.c) cod=o.c; }catch(e){}
+      const insc=inscritosCache.find(i=>i.codigoInscricao===cod);
+      if(insc){ const ok=await marcarPresenca(insc); if(ok){await scanner.stop().catch(()=>{});scanner=null;$('btnScan').textContent='Iniciar câmera';mostrarAchado(insc);} }
+      else toast('Código não encontrado neste evento','err');
+    },()=>{});
+  }catch(e){toast('Não foi possível acessar a câmera','err');$('btnScan').textContent='Iniciar câmera';scanner=null;}
+};
+
+/* ---- Busca por nome (backup) ---- */
+$('busca').oninput=buscarNome;
+function buscarNome(){
+  const q=$('busca').value.trim().toLowerCase();
+  const box=$('resultNome');
+  if(!q){box.innerHTML='';return;}
+  const achados=inscritosCache.filter(i=>(i.nome||'').toLowerCase().includes(q)).slice(0,8);
+  if(!achados.length){box.innerHTML='<p class="muted" style="text-align:left">Nenhum inscrito encontrado.</p>';return;}
+  box.innerHTML=achados.map(i=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid var(--line)">
+    <div><div style="font-weight:600;color:var(--navy);font-size:14px">${esc(i.nome)}</div>
+    <div style="font-size:12px;color:var(--muted)">${esc(i.municipio||'')}</div></div>
+    ${i.presente?'<span style="font-size:11px;font-weight:700;color:var(--green)">Presente</span>':`<button class="btnCred" data-id="${i.id}" style="border:none;background:var(--green);color:#fff;font-size:12px;font-weight:700;padding:8px 13px;border-radius:8px;cursor:pointer">Creditar</button>`}
+  </div>`).join('');
+  box.querySelectorAll('.btnCred').forEach(b=>b.onclick=async()=>{
+    const insc=inscritosCache.find(x=>x.id===b.dataset.id);
+    const ok=await marcarPresenca(insc); if(ok) mostrarAchado(insc);
+  });
+}
+</script>
+</body>
+</html>

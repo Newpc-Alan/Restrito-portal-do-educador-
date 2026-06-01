@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Inscrição · Portal do Educador</title>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+:root{--navy:#0F2C4A;--navy2:#1E324A;--green:#1A6B2A;--green2:#2DA68C;--cyan:#37B1DA;--lime:#B6D752;--paper:#FBFAF7;--ink:#16202e;--muted:#6b7785;--line:#e3e0d8;}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:radial-gradient(1000px 500px at 100% -10%,rgba(55,177,218,.13),transparent 60%),radial-gradient(900px 450px at -10% 110%,rgba(45,166,140,.13),transparent 55%),var(--paper);color:var(--ink);min-height:100vh;padding:24px}
+.box{max-width:480px;margin:30px auto;background:#fff;border:1px solid var(--line);border-radius:18px;box-shadow:0 16px 44px rgba(15,44,74,.1);overflow:hidden}
+.head{background:linear-gradient(120deg,var(--navy),var(--navy2));color:#fff;padding:28px;text-align:center;border-bottom:3px solid var(--lime)}
+.head h1{font-size:20px;font-weight:700}
+.head p{font-size:13px;opacity:.8;margin-top:4px}
+.evento-nome{font-size:15px;font-weight:600;color:var(--lime);margin-top:10px}
+.body{padding:28px}
+label{display:block;font-size:12.5px;font-weight:600;color:var(--navy);margin:16px 0 6px}
+label:first-child{margin-top:0}
+input{width:100%;padding:12px 14px;border:1.5px solid var(--line);border-radius:10px;font-size:15px;font-family:inherit;background:var(--paper);transition:.15s}
+input:focus{outline:none;border-color:var(--cyan);background:#fff;box-shadow:0 0 0 3px rgba(55,177,218,.12)}
+.btn{width:100%;padding:14px;border:none;border-radius:11px;font-size:15px;font-weight:700;cursor:pointer;background:linear-gradient(135deg,var(--green),var(--green2));color:#fff;margin-top:22px;box-shadow:0 8px 20px rgba(26,107,42,.28);transition:.18s}
+.btn:hover{transform:translateY(-1px)}
+.btn:disabled{opacity:.55;cursor:not-allowed;transform:none}
+.msg{margin-top:16px;padding:12px 14px;border-radius:10px;font-size:13.5px;display:none;line-height:1.5}
+.msg.show{display:block}
+.msg.err{background:rgba(214,69,69,.1);color:#b53636;border:1px solid rgba(214,69,69,.25)}
+.ok-screen{display:none;text-align:center;padding:10px 0}
+.ok-screen.show{display:block}
+.check{width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,var(--green),var(--green2));color:#fff;font-size:34px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px}
+.ok-screen h2{color:var(--green);font-size:20px;margin-bottom:6px}
+.ok-screen p{color:var(--muted);font-size:13.5px;line-height:1.5}
+#qr{display:flex;justify-content:center;margin:22px auto;padding:16px;background:#fff;border:2px solid var(--line);border-radius:14px;width:fit-content}
+.qr-hint{font-size:12px;color:var(--muted);margin-top:4px}
+.cod{font-family:'IBM Plex Mono',monospace;font-weight:700;color:var(--navy);font-size:16px;letter-spacing:1px;margin-top:8px}
+.foot{text-align:center;font-size:11px;color:var(--muted);padding:0 28px 22px}
+</style>
+</head>
+<body>
+<div class="box">
+  <div class="head">
+    <h1>Inscrição</h1>
+    <p>Portal do Educador · Formação de Professores</p>
+    <div class="evento-nome" id="evNome">Carregando evento...</div>
+  </div>
+  <div class="body">
+    <div id="form-area">
+      <label>Nome completo *</label>
+      <input id="nome" placeholder="Seu nome como deve sair no certificado">
+      <label>CPF *</label>
+      <input id="cpf" inputmode="numeric" placeholder="000.000.000-00" maxlength="14">
+      <label>E-mail *</label>
+      <input id="email" type="email" placeholder="seu@email.com">
+      <label>Escola / Unidade</label>
+      <input id="escola" placeholder="Nome da escola">
+      <label>Município</label>
+      <input id="municipio" placeholder="Cidade">
+      <button class="btn" id="btn">Confirmar inscrição</button>
+      <div class="msg" id="msg"></div>
+    </div>
+
+    <div class="ok-screen" id="ok">
+      <div class="check">&#10003;</div>
+      <h2>Inscrição confirmada!</h2>
+      <p>Apresente este QR Code no credenciamento, no dia do evento.<br>Salve ou tire um print desta tela.</p>
+      <div id="qr"></div>
+      <div class="cod" id="meuCod"></div>
+      <p class="qr-hint">Guarde também seu código de inscrição.</p>
+    </div>
+  </div>
+  <p class="foot">NEWPC Tecnologia LTDA · CNPJ 20.892.343/0001-15</p>
+</div>
+
+<script>
+/* ============================================================
+   PREENCHA COM A CONFIG DO SEU PROJETO FIREBASE
+   (a mesma do Hub Interno: portal-do-educador-interno)
+   Console Firebase > Configurações do projeto > Seus apps
+   ============================================================ */
+const firebaseConfig = {
+  apiKey: "AIzaSyCHLrwHDUsVKKyIgHlbpkWsv1dOTBfY52M",
+  authDomain: "portal-do-educador-interno.firebaseapp.com",
+  projectId: "portal-do-educador-interno",
+  storageBucket: "portal-do-educador-interno.firebasestorage.app",
+  messagingSenderId: "133947200175",
+  appId: "1:133947200175:web:a819a5a7c1196544d97a5a"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+const $ = id => document.getElementById(id);
+const params = new URLSearchParams(location.search);
+const eventoId = params.get('evento');
+
+let evento = null;
+
+async function carregarEvento(){
+  if(!eventoId){ $('evNome').textContent = 'Evento não informado no link'; $('btn').disabled = true; return; }
+  try{
+    const snap = await db.collection('eventos').doc(eventoId).get();
+    if(!snap.exists){ $('evNome').textContent = 'Evento não encontrado'; $('btn').disabled = true; return; }
+    evento = snap.data();
+    if(evento.inscricoesAbertas === false){ $('evNome').textContent = 'Inscrições encerradas'; $('btn').disabled = true; return; }
+    $('evNome').textContent = evento.nomeEvento || evento.curso || 'Evento';
+  }catch(e){
+    $('evNome').textContent = 'Erro ao carregar evento';
+    erro('Não foi possível conectar. Tente novamente em instantes.');
+  }
+}
+
+function erro(t){ const m=$('msg'); m.className='msg show err'; m.textContent=t; }
+
+// máscara de CPF enquanto digita
+$('cpf').oninput = e => {
+  let v = e.target.value.replace(/\D/g,'').slice(0,11);
+  v = v.replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})(\d{1,2})$/,'$1-$2');
+  e.target.value = v;
+};
+
+// validação real de CPF (dígitos verificadores)
+function cpfValido(cpf){
+  cpf = cpf.replace(/\D/g,'');
+  if(cpf.length !== 11 || /^(\d)\1{10}$/.test(cpf)) return false;
+  let s=0; for(let i=0;i<9;i++) s += parseInt(cpf[i])*(10-i);
+  let d1 = (s*10)%11; if(d1===10) d1=0; if(d1!==parseInt(cpf[9])) return false;
+  s=0; for(let i=0;i<10;i++) s += parseInt(cpf[i])*(11-i);
+  let d2 = (s*10)%11; if(d2===10) d2=0; return d2===parseInt(cpf[10]);
+}
+
+function gerarCodigo(){
+  // código curto e legível: PDE + 6 base36
+  return 'INS-' + Date.now().toString(36).toUpperCase().slice(-4) + Math.random().toString(36).toUpperCase().slice(2,5);
+}
+
+$('btn').onclick = async () => {
+  const nome = $('nome').value.trim();
+  const email = $('email').value.trim();
+  const cpfRaw = $('cpf').value.replace(/\D/g,'');
+  if(nome.length < 3){ erro('Informe seu nome completo.'); return; }
+  if(!cpfValido(cpfRaw)){ erro('CPF inválido. Confira os números.'); return; }
+  if(!/^[^@]+@[^@]+\.[^@]+$/.test(email)){ erro('Informe um e-mail válido.'); return; }
+  $('btn').disabled = true; $('btn').textContent = 'Enviando...';
+  $('msg').className = 'msg';
+
+  const codigo = gerarCodigo();
+  try{
+    const col = db.collection('eventos').doc(eventoId).collection('inscritos');
+    // impede inscrição duplicada do mesmo CPF neste evento
+    const dup = await col.where('cpf','==',cpfRaw).limit(1).get();
+    if(!dup.empty){
+      const ja = dup.docs[0].data();
+      $('form-area').style.display = 'none';
+      $('ok').classList.add('show');
+      $('ok').querySelector('h2').textContent = 'Você já estava inscrito!';
+      $('meuCod').textContent = ja.codigoInscricao || codigo;
+      new QRCode($('qr'), { text: ja.codigoInscricao || codigo, width:180, height:180, colorDark:'#0F2C4A', colorLight:'#ffffff' });
+      return;
+    }
+    await col.add({
+      nome, email,
+      cpf: cpfRaw,
+      escola: $('escola').value.trim(),
+      municipio: $('municipio').value.trim(),
+      codigoInscricao: codigo,
+      presente: false,
+      checkinEm: null,
+      codigoCert: null,
+      inscritoEm: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    $('form-area').style.display = 'none';
+    $('ok').classList.add('show');
+    $('meuCod').textContent = codigo;
+    new QRCode($('qr'), { text: codigo, width: 180, height: 180, colorDark: '#0F2C4A', colorLight: '#ffffff' });
+  }catch(e){
+    $('btn').disabled = false; $('btn').textContent = 'Confirmar inscrição';
+    erro('Não foi possível concluir a inscrição. Verifique sua conexão e tente novamente.');
+  }
+};
+
+carregarEvento();
+</script>
+</body>
+</html>

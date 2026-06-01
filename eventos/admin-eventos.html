@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Eventos · Painel · Portal do Educador</title>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<style>
+:root{--navy:#0F2C4A;--navy2:#1E324A;--green:#1A6B2A;--green2:#2DA68C;--cyan:#37B1DA;--lime:#B6D752;--paper:#FBFAF7;--ink:#16202e;--muted:#6b7785;--line:#e3e0d8;}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--paper);color:var(--ink);min-height:100vh}
+.topbar{background:linear-gradient(120deg,var(--navy),var(--navy2));color:#fff;padding:18px 22px;display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid var(--lime)}
+.topbar h1{font-size:17px}.logout{background:rgba(255,255,255,.12);border:none;color:#fff;padding:7px 12px;border-radius:8px;font-size:12px;cursor:pointer}
+.wrap{max-width:760px;margin:22px auto;padding:0 18px}
+.card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:22px;box-shadow:0 8px 24px rgba(15,44,74,.06);margin-bottom:18px}
+.card h2{font-size:12px;text-transform:uppercase;letter-spacing:1.2px;color:var(--navy);margin-bottom:16px;font-weight:700}
+label{display:block;font-size:12px;font-weight:600;color:var(--navy);margin:12px 0 6px}
+input,textarea{width:100%;padding:11px 13px;border:1.5px solid var(--line);border-radius:10px;font-size:14px;font-family:inherit;background:var(--paper)}
+input:focus,textarea:focus{outline:none;border-color:var(--cyan);background:#fff}
+textarea{resize:vertical;min-height:80px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.btn{padding:13px 18px;border:none;border-radius:11px;font-size:14px;font-weight:700;cursor:pointer;background:linear-gradient(135deg,var(--green),var(--green2));color:#fff;margin-top:18px;width:100%}
+.evento{border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:12px}
+.evento .t{font-weight:700;color:var(--navy);font-size:15px}
+.evento .links{margin-top:10px;display:flex;flex-direction:column;gap:6px}
+.linkrow{display:flex;align-items:center;gap:8px;font-size:12px}
+.linkrow .lbl{font-weight:600;color:var(--green);min-width:115px}
+.linkrow code{background:var(--paper);border:1px solid var(--line);border-radius:7px;padding:5px 9px;font-size:11.5px;flex:1;word-break:break-all}
+.copy{border:none;background:var(--cyan);color:#fff;border-radius:7px;padding:5px 10px;font-size:11px;cursor:pointer}
+.msg{margin-top:12px;font-size:13px}
+#login{max-width:380px;margin:60px auto;padding:0 18px}
+.muted{font-size:12px;color:var(--muted);margin-top:8px}
+</style>
+</head>
+<body>
+
+<div id="login" style="display:none">
+  <div class="card">
+    <h2 style="text-align:center">Painel de Eventos · Acesso restrito</h2>
+    <label>E-mail</label><input id="loginEmail" type="email">
+    <label>Senha</label><input id="loginSenha" type="password">
+    <button class="btn" id="btnLogin">Entrar</button>
+    <p class="muted" id="loginMsg" style="text-align:center"></p>
+  </div>
+</div>
+
+<div id="app" style="display:none">
+  <div class="topbar"><h1>Painel de Eventos</h1><button class="logout" id="btnLogout">Sair</button></div>
+  <div class="wrap">
+    <div class="card">
+      <h2>Novo evento</h2>
+      <label>Nome do evento *</label>
+      <input id="nomeEvento" placeholder="Ex.: Jornada Pedagógica 2026 · Município X">
+      <div class="row">
+        <div><label>Título do curso (sai no certificado) *</label><input id="curso" placeholder="Formação em Tecnologias Educacionais"></div>
+        <div><label>Carga horária</label><input id="carga" value="8 horas"></div>
+      </div>
+      <label>Data (texto do certificado)</label><input id="data" value="Campo Grande/MS, maio de 2026">
+      <label>Texto do corpo</label>
+      <textarea id="corpo">Certificamos que {nome} participou e concluiu com aproveitamento o curso {curso}, com carga horária de {carga}, promovido pelo Portal do Educador.</textarea>
+      <div class="row">
+        <div><label>Assinante 1 · nome</label><input id="ass1nome" value="Leonardo Gomes"></div>
+        <div><label>Assinante 1 · cargo</label><input id="ass1cargo" value="Coordenação Pedagógica"></div>
+      </div>
+      <div class="row">
+        <div><label>Assinante 2 · nome</label><input id="ass2nome" value="Alan Valerio Pires Ramos"></div>
+        <div><label>Assinante 2 · cargo</label><input id="ass2cargo" value="Diretor · Portal do Educador"></div>
+      </div>
+      <div class="row">
+        <div><label>Prefixo do código</label><input id="prefixoCert" value="PDE-2026"></div>
+        <div><label>Início numeração</label><input id="numInicio" type="number" value="1"></div>
+      </div>
+      <label>Respaldo contratual (opcional)</label>
+      <input id="respaldo" placeholder="Ex.: Ata de Registro de Preços nº 000/2026">
+      <button class="btn" id="btnCriar">Criar evento</button>
+      <p class="msg" id="msg"></p>
+    </div>
+
+    <div class="card">
+      <h2>Eventos criados</h2>
+      <div id="listaEventos"><p class="muted">Carregando...</p></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyCHLrwHDUsVKKyIgHlbpkWsv1dOTBfY52M",
+  authDomain: "portal-do-educador-interno.firebaseapp.com",
+  projectId: "portal-do-educador-interno",
+  storageBucket: "portal-do-educador-interno.firebasestorage.app",
+  messagingSenderId: "133947200175",
+  appId: "1:133947200175:web:a819a5a7c1196544d97a5a"
+};
+firebase.initializeApp(firebaseConfig);
+const db=firebase.firestore(),$=id=>document.getElementById(id);
+let usuarioLogado=null;
+
+// SHA-256 igual ao Hub (Web Crypto nativa)
+async function sha256(txt){
+  const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(txt));
+  return [...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+
+// Login validando contra a coleção 'usuarios' do Hub
+async function fazerLogin(){
+  const email=$('loginEmail').value.trim().toLowerCase();
+  const senha=$('loginSenha').value;
+  if(!email||!senha){$('loginMsg').textContent='Preencha e-mail e senha.';$('loginMsg').style.color='#b53636';return;}
+  $('btnLogin').disabled=true;
+  try{
+    const doc=await db.collection('usuarios').doc(email).get();
+    if(!doc.exists){ falhaLogin(); return; }
+    const u=doc.data();
+    if(u.ativo===false){ $('loginMsg').textContent='Usuário inativo.';$('loginMsg').style.color='#b53636';$('btnLogin').disabled=false;return; }
+    const hash=await sha256(senha);
+    if(hash!==u.senhaHash){ falhaLogin(); return; }
+    usuarioLogado={email, nome:u.nome||email, role:u.role||''};
+    $('login').style.display='none';$('app').style.display='block';
+    listar();
+  }catch(e){ $('loginMsg').textContent='Erro ao conectar. Tente novamente.';$('loginMsg').style.color='#b53636'; }
+  $('btnLogin').disabled=false;
+}
+function falhaLogin(){$('loginMsg').textContent='E-mail ou senha incorretos.';$('loginMsg').style.color='#b53636';$('btnLogin').disabled=false;}
+
+window.addEventListener('DOMContentLoaded',()=>{ $('login').style.display='block';$('app').style.display='none'; });
+$('btnLogin').onclick=fazerLogin;
+$('loginSenha').addEventListener('keydown',e=>{if(e.key==='Enter')fazerLogin();});
+$('btnLogout').onclick=()=>{usuarioLogado=null;location.reload();};
+
+$('btnCriar').onclick=async()=>{
+  const nomeEvento=$('nomeEvento').value.trim(), curso=$('curso').value.trim();
+  if(nomeEvento.length<3||curso.length<3){$('msg').textContent='Preencha nome do evento e curso.';$('msg').style.color='#b53636';return;}
+  $('btnCriar').disabled=true;
+  try{
+    await db.collection('eventos').add({
+      nomeEvento, curso, carga:$('carga').value, data:$('data').value, corpo:$('corpo').value,
+      ass1nome:$('ass1nome').value, ass1cargo:$('ass1cargo').value,
+      ass2nome:$('ass2nome').value, ass2cargo:$('ass2cargo').value,
+      prefixoCert:$('prefixoCert').value, numInicio:parseInt($('numInicio').value||1,10),
+      respaldo:$('respaldo').value, marca:'PORTAL DO EDUCADOR',
+      instituicao:'Uma solução NEWPC Tecnologia LTDA · CNPJ 20.892.343/0001-15',
+      inscricoesAbertas:true, criadoEm:firebase.firestore.FieldValue.serverTimestamp()
+    });
+    $('msg').textContent='Evento criado!';$('msg').style.color='var(--green)';
+    $('nomeEvento').value='';
+  }catch(e){$('msg').textContent='Erro ao criar evento.';$('msg').style.color='#b53636';}
+  $('btnCriar').disabled=false;
+};
+
+function base(arq){return location.href.replace(/admin-eventos\.html.*/,arq);}
+function listar(){
+  db.collection('eventos').orderBy('criadoEm','desc').onSnapshot(snap=>{
+    if(snap.empty){$('listaEventos').innerHTML='<p class="muted">Nenhum evento criado ainda.</p>';return;}
+    $('listaEventos').innerHTML=snap.docs.map(d=>{
+      const ev=d.data(),id=d.id;
+      const insc=`${base('inscricao.html')}?evento=${id}`;
+      const cred=`${base('credenciamento.html')}?evento=${id}`;
+      const emi=`${base('emissao.html')}?evento=${id}`;
+      const cert=`${base('certificado.html')}?evento=${id}`;
+      return `<div class="evento"><div class="t">${esc(ev.nomeEvento||ev.curso)}</div>
+        <div class="links">
+          ${linkrow('Inscrição (público)',insc)}
+          ${linkrow('Credenciamento',cred)}
+          ${linkrow('Emissão',emi)}
+          ${linkrow('Download (público)',cert)}
+        </div></div>`;
+    }).join('');
+    document.querySelectorAll('.copy').forEach(b=>b.onclick=()=>{navigator.clipboard.writeText(b.dataset.l);b.textContent='✓';setTimeout(()=>b.textContent='Copiar',1200);});
+  });
+}
+function linkrow(lbl,url){return `<div class="linkrow"><span class="lbl">${lbl}</span><code>${url}</code><button class="copy" data-l="${url}">Copiar</button></div>`;}
+function esc(s){return (s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+</script>
+</body>
+</html>
