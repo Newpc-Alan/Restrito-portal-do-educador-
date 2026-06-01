@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Emissão de Certificados · Portal do Educador</title>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<style>
+:root{--navy:#0F2C4A;--navy2:#1E324A;--green:#1A6B2A;--green2:#2DA68C;--cyan:#37B1DA;--lime:#B6D752;--paper:#FBFAF7;--ink:#16202e;--muted:#6b7785;--line:#e3e0d8;}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--paper);color:var(--ink);min-height:100vh}
+.topbar{background:linear-gradient(120deg,var(--navy),var(--navy2));color:#fff;padding:18px 22px;display:flex;align-items:center;justify-content:space-between;border-bottom:3px solid var(--lime)}
+.topbar h1{font-size:16px;font-weight:700}.topbar .ev{font-size:12px;opacity:.8}
+.logout{background:rgba(255,255,255,.12);border:none;color:#fff;padding:7px 12px;border-radius:8px;font-size:12px;cursor:pointer}
+.wrap{max-width:640px;margin:22px auto;padding:0 18px}
+.card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:20px;box-shadow:0 8px 24px rgba(15,44,74,.06);margin-bottom:18px}
+.card h2{font-size:12px;text-transform:uppercase;letter-spacing:1.2px;color:var(--navy);margin-bottom:14px;font-weight:700}
+.stats{display:flex;gap:10px;margin-bottom:6px}
+.stat{flex:1;background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px;text-align:center}
+.stat .n{font-size:26px;font-weight:800;color:var(--green)}.stat .l{font-size:11px;color:var(--muted)}
+.btn{width:100%;padding:14px;border:none;border-radius:11px;font-size:14.5px;font-weight:700;cursor:pointer;transition:.15s}
+.btn-primary{background:linear-gradient(135deg,var(--green),var(--green2));color:#fff;box-shadow:0 8px 20px rgba(26,107,42,.28)}
+.btn-primary:disabled{opacity:.55;cursor:not-allowed}
+.btn-ghost{background:var(--paper);border:1.5px solid var(--line);color:var(--navy);margin-top:10px}
+.lista{max-height:240px;overflow:auto;border:1px solid var(--line);border-radius:11px;margin-top:6px}
+.linha{display:flex;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--line);font-size:13.5px}
+.linha:last-child{border-bottom:none}
+.linha .nm{font-weight:600;color:var(--navy)}.linha .cd{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--cyan)}
+.status{margin-top:14px;padding:12px 14px;border-radius:10px;font-size:13px;display:none;line-height:1.5}
+.status.show{display:block}
+.status.ok{background:rgba(45,166,140,.12);color:var(--green);border:1px solid rgba(45,166,140,.3)}
+.status.work{background:rgba(55,177,218,.12);color:#1c6e8c;border:1px solid rgba(55,177,218,.3)}
+.status.err{background:rgba(214,69,69,.1);color:#b53636;border:1px solid rgba(214,69,69,.25)}
+.bar{height:7px;background:var(--line);border-radius:4px;overflow:hidden;margin-top:9px}
+.bar-fill{height:100%;width:0;background:linear-gradient(90deg,var(--cyan),var(--green2));transition:width .2s}
+.linkbox{background:var(--paper);border:1px dashed var(--line);border-radius:10px;padding:12px;font-size:12.5px;color:var(--navy);word-break:break-all;margin-top:8px;font-family:'IBM Plex Mono',monospace}
+#login{max-width:380px;margin:60px auto;padding:0 18px}
+input{width:100%;padding:12px 14px;border:1.5px solid var(--line);border-radius:10px;font-size:15px;background:var(--paper)}
+input:focus{outline:none;border-color:var(--cyan);background:#fff}
+.muted{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.5}
+label{font-size:12px;font-weight:600;color:var(--navy);display:block;margin:14px 0 6px}
+</style>
+</head>
+<body>
+
+<div id="login" style="display:none">
+  <div class="card">
+    <h2 style="text-align:center">Acesso restrito · Emissão</h2>
+    <label>E-mail</label><input id="loginEmail" type="email">
+    <label>Senha</label><input id="loginSenha" type="password">
+    <button class="btn btn-primary" style="margin-top:18px" id="btnLogin">Entrar</button>
+    <p class="muted" id="loginMsg" style="text-align:center"></p>
+  </div>
+</div>
+
+<div id="app" style="display:none">
+  <div class="topbar">
+    <div><h1>Emissão de Certificados</h1><div class="ev" id="evNome">—</div></div>
+    <button class="logout" id="btnLogout">Sair</button>
+  </div>
+  <div class="wrap">
+    <div class="stats">
+      <div class="stat"><div class="n" id="nPresentes">0</div><div class="l">Presentes (elegíveis)</div></div>
+      <div class="stat"><div class="n" id="nEmitidos">0</div><div class="l">Já emitidos</div></div>
+    </div>
+
+    <div class="card">
+      <h2>Presentes elegíveis</h2>
+      <div class="lista" id="lista"></div>
+      <button class="btn btn-primary" id="btnLote" style="margin-top:14px">Emitir todos em lote (ZIP)</button>
+      <button class="btn btn-ghost" id="btnPublicar">Liberar download para os professores (autolink)</button>
+      <div class="status" id="status"></div>
+      <div class="bar" id="barwrap" style="display:none"><div class="bar-fill" id="barfill"></div></div>
+      <div id="linkArea"></div>
+    </div>
+  </div>
+</div>
+
+<canvas id="cv" width="1414" height="1000" style="display:none"></canvas>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyCHLrwHDUsVKKyIgHlbpkWsv1dOTBfY52M",
+  authDomain: "portal-do-educador-interno.firebaseapp.com",
+  projectId: "portal-do-educador-interno",
+  storageBucket: "portal-do-educador-interno.firebasestorage.app",
+  messagingSenderId: "133947200175",
+  appId: "1:133947200175:web:a819a5a7c1196544d97a5a"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+const $ = id => document.getElementById(id);
+const eventoId = new URLSearchParams(location.search).get('evento');
+let evento = null, presentes = [], logoImg = new Image(), logoReady = false, usuarioLogado = null;
+
+// LOGO embutida (mesma do gerador). Cole aqui o data:image se quiser logo no PDF.
+const LOGO_SRC = "";
+if(LOGO_SRC){ logoImg.onload=()=>logoReady=true; logoImg.src=LOGO_SRC; }
+
+/* ---- Auth via coleção 'usuarios' (mesmo login do Hub) ---- */
+async function sha256(txt){
+  const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(txt));
+  return [...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+async function fazerLogin(){
+  const email=$('loginEmail').value.trim().toLowerCase();
+  const senha=$('loginSenha').value;
+  if(!email||!senha){ $('loginMsg').textContent='Preencha e-mail e senha.';$('loginMsg').style.color='#b53636';return; }
+  $('btnLogin').disabled=true;
+  try{
+    const doc=await db.collection('usuarios').doc(email).get();
+    if(!doc.exists){ falhaLogin(); return; }
+    const u=doc.data();
+    if(u.ativo===false){ $('loginMsg').textContent='Usuário inativo.';$('loginMsg').style.color='#b53636';$('btnLogin').disabled=false;return; }
+    if(await sha256(senha)!==u.senhaHash){ falhaLogin(); return; }
+    usuarioLogado={email, nome:u.nome||email, role:u.role||''};
+    $('login').style.display='none';$('app').style.display='block'; iniciar();
+  }catch(e){ $('loginMsg').textContent='Erro ao conectar. Tente novamente.';$('loginMsg').style.color='#b53636'; }
+  $('btnLogin').disabled=false;
+}
+function falhaLogin(){$('loginMsg').textContent='E-mail ou senha incorretos.';$('loginMsg').style.color='#b53636';$('btnLogin').disabled=false;}
+
+window.addEventListener('DOMContentLoaded',()=>{ $('login').style.display='block';$('app').style.display='none'; });
+$('btnLogin').onclick=fazerLogin;
+$('loginSenha').addEventListener('keydown',e=>{if(e.key==='Enter')fazerLogin();});
+$('btnLogout').onclick=()=>{usuarioLogado=null;location.reload();};
+
+async function iniciar(){
+  if(!eventoId){ $('evNome').textContent='Evento não informado'; return; }
+  const ev = await db.collection('eventos').doc(eventoId).get();
+  if(!ev.exists){ $('evNome').textContent='Evento não encontrado'; return; }
+  evento = ev.data();
+  $('evNome').textContent = evento.nomeEvento||evento.curso||'Evento';
+  db.collection('eventos').doc(eventoId).collection('inscritos')
+    .where('presente','==',true).onSnapshot(snap=>{
+      presentes = snap.docs.map(d=>({id:d.id,...d.data()}));
+      render();
+    });
+}
+
+function render(){
+  $('nPresentes').textContent = presentes.length;
+  $('nEmitidos').textContent = presentes.filter(p=>p.codigoCert).length;
+  $('lista').innerHTML = presentes.map(p=>`
+    <div class="linha"><span class="nm">${esc(p.nome)}</span>
+    <span class="cd">${p.codigoCert||'—'}</span></div>`).join('') || '<div class="linha">Nenhum presente ainda.</div>';
+}
+function esc(s){return (s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+function status(t,tipo){const s=$('status');s.className='status show '+tipo;s.textContent=t;}
+function sanitizar(s){return (s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-zA-Z0-9]+/g,'_').slice(0,40);}
+
+function codigoCert(i){
+  const pref = (evento.prefixoCert||'PDE-2026');
+  const n = (evento.numInicio||1)+i;
+  return pref+'-'+String(n).padStart(4,'0');
+}
+
+function quebrar(ctx,t,maxW){const ps=t.split(' ');const ls=[];let a='';ps.forEach(p=>{const x=a?a+' '+p:p;if(ctx.measureText(x).width>maxW&&a){ls.push(a);a=p;}else a=x;});if(a)ls.push(a);return ls;}
+
+function desenhar(ctx,nome,codigo){
+  const W=1414,H=1000;
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle='#FBFAF7';ctx.fillRect(0,0,W,H);
+  ctx.strokeStyle='#0F2C4A';ctx.lineWidth=6;ctx.strokeRect(34,34,W-68,H-68);
+  ctx.strokeStyle='#37B1DA';ctx.lineWidth=2;ctx.strokeRect(48,48,W-96,H-96);
+  ctx.fillStyle='#0F2C4A';ctx.fillRect(34,34,18,H-68);
+  ctx.fillStyle='#B6D752';ctx.fillRect(52,34,6,H-68);
+  ctx.textAlign='center';
+  if(logoReady){const ls=92,ly=70;ctx.save();ctx.beginPath();ctx.arc(W/2,ly+ls/2,ls/2,0,7);ctx.fillStyle='#0F2C4A';ctx.fill();ctx.clip();ctx.drawImage(logoImg,W/2-ls/2,ly,ls,ls);ctx.restore();ctx.strokeStyle='#37B1DA';ctx.lineWidth=2.5;ctx.beginPath();ctx.arc(W/2,ly+ls/2,ls/2,0,7);ctx.stroke();}
+  ctx.fillStyle='#1A6B2A';ctx.font='800 30px Segoe UI,sans-serif';
+  ctx.fillText((evento.marca||'PORTAL DO EDUCADOR').toUpperCase(),W/2,logoReady?210:160);
+  ctx.fillStyle='#6b7785';ctx.font='600 15px Segoe UI,sans-serif';
+  ctx.fillText('FORMAÇÃO CONTINUADA DE PROFESSORES',W/2,logoReady?238:188);
+  ctx.fillStyle='#0F2C4A';ctx.font='800 52px Georgia,serif';ctx.fillText('CERTIFICADO',W/2,300);
+  ctx.strokeStyle='#37B1DA';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(W/2-90,318);ctx.lineTo(W/2+90,318);ctx.stroke();
+  ctx.fillStyle='#1A6B2A';ctx.font='italic 700 48px Georgia,serif';ctx.fillText(nome,W/2,402);
+  ctx.strokeStyle='#e3e0d8';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(W/2-380,425);ctx.lineTo(W/2+380,425);ctx.stroke();
+  const corpo=(evento.corpo||'Certificamos que {nome} participou e concluiu com aproveitamento o curso {curso}, com carga horária de {carga}, promovido pelo Portal do Educador.')
+    .replace(/{nome}/g,nome).replace(/{curso}/g,evento.curso||'').replace(/{carga}/g,evento.carga||'');
+  ctx.fillStyle='#16202e';ctx.font='400 22px Segoe UI,sans-serif';
+  let y=490;quebrar(ctx,corpo,920).forEach(l=>{ctx.fillText(l,W/2,y);y+=34;});
+  ctx.fillStyle='#6b7785';ctx.font='600 18px Segoe UI,sans-serif';ctx.fillText(evento.data||'',W/2,y+30);
+  if(evento.respaldo){ctx.fillStyle='#1c6e8c';ctx.font='italic 600 14px Segoe UI,sans-serif';let ry=y+58;quebrar(ctx,evento.respaldo,900).forEach(l=>{ctx.fillText(l,W/2,ry);ry+=20;});}
+  const ay=820;
+  [[evento.ass1nome||'',evento.ass1cargo||'',W*0.32],[evento.ass2nome||'',evento.ass2cargo||'',W*0.68]].forEach(([n,c,x])=>{
+    ctx.strokeStyle='#0F2C4A';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(x-150,ay);ctx.lineTo(x+150,ay);ctx.stroke();
+    ctx.fillStyle='#0F2C4A';ctx.font='700 19px Segoe UI,sans-serif';ctx.fillText(n,x,ay+30);
+    ctx.fillStyle='#6b7785';ctx.font='400 15px Segoe UI,sans-serif';ctx.fillText(c,x,ay+52);
+  });
+  ctx.fillStyle='#0F2C4A';ctx.font='600 14px Segoe UI,sans-serif';
+  ctx.fillText(evento.instituicao||'Uma solução NEWPC Tecnologia LTDA · CNPJ 20.892.343/0001-15',W/2,H-110);
+  ctx.fillStyle='#37B1DA';ctx.font='700 14px IBM Plex Mono,monospace';
+  ctx.fillText('CÓDIGO DE AUTENTICAÇÃO: '+codigo,W/2,H-78);
+}
+
+function fazerPDF(nome,codigo){
+  const {jsPDF}=window.jspdf;
+  const ctx=$('cv').getContext('2d');
+  desenhar(ctx,nome,codigo);
+  const pdf=new jsPDF({orientation:'landscape',unit:'mm',format:'a4'});
+  pdf.addImage($('cv').toDataURL('image/jpeg',0.92),'JPEG',0,0,297,210);
+  return pdf;
+}
+
+/* ---- Emitir lote ZIP + atribuir códigos no Firestore ---- */
+$('btnLote').onclick=async()=>{
+  if(!presentes.length){status('Não há presentes para emitir.','err');return;}
+  $('btnLote').disabled=true;$('barwrap').style.display='block';
+  const zip=new JSZip();
+  for(let i=0;i<presentes.length;i++){
+    const p=presentes[i];
+    const cod = p.codigoCert || codigoCert(i);
+    const pdf=fazerPDF(p.nome,cod);
+    zip.file(`${cod}_${sanitizar(p.nome)}.pdf`, pdf.output('blob'));
+    // grava código no inscrito (idempotente) + espelho público
+    if(!p.codigoCert){
+      await db.collection('eventos').doc(eventoId).collection('inscritos').doc(p.id).update({codigoCert:cod});
+      await db.collection('certificados_publicos').doc(cod).set({
+        nome:p.nome, codigoCert:cod, evento:evento.nomeEvento||evento.curso||'',
+        curso:evento.curso||'', carga:evento.carga||'', data:evento.data||'',
+        eventoId, inscritoId:p.id, emitidoEm: firebase.firestore.FieldValue.serverTimestamp()
+      });
+    }
+    const pct=Math.round(((i+1)/presentes.length)*100);
+    $('barfill').style.width=pct+'%';status(`Emitindo... ${i+1} de ${presentes.length}`,'work');
+    if(i%4===0)await new Promise(r=>setTimeout(r,0));
+  }
+  const blob=await zip.generateAsync({type:'blob'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download=`Certificados_${sanitizar(evento.nomeEvento||evento.curso)}.zip`;a.click();
+  status(`Concluído! ${presentes.length} certificado(s) emitido(s).`,'ok');
+  $('btnLote').disabled=false;setTimeout(()=>$('barwrap').style.display='none',1500);
+};
+
+/* ---- Publicar autolink (garante códigos e espelho, sem baixar ZIP) ---- */
+$('btnPublicar').onclick=async()=>{
+  if(!presentes.length){status('Não há presentes.','err');return;}
+  $('btnPublicar').disabled=true;status('Liberando downloads...','work');
+  for(let i=0;i<presentes.length;i++){
+    const p=presentes[i]; if(p.codigoCert) continue;
+    const cod=codigoCert(i);
+    await db.collection('eventos').doc(eventoId).collection('inscritos').doc(p.id).update({codigoCert:cod});
+    await db.collection('certificados_publicos').doc(cod).set({
+      nome:p.nome, codigoCert:cod, evento:evento.nomeEvento||evento.curso||'',
+      curso:evento.curso||'', carga:evento.carga||'', data:evento.data||'',
+      eventoId, inscritoId:p.id, emitidoEm: firebase.firestore.FieldValue.serverTimestamp()
+    });
+  }
+  const base=location.href.replace(/emissao\.html.*/,'certificado.html');
+  const link=`${base}?evento=${eventoId}`;
+  $('linkArea').innerHTML=`<p class="muted">Envie este link aos professores. Eles informam o e-mail/código e baixam o próprio certificado (só se presentes):</p><div class="linkbox">${link}</div>`;
+  status('Downloads liberados!','ok');$('btnPublicar').disabled=false;
+};
+</script>
+</body>
+</html>
