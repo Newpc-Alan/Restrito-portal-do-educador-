@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sorteio de Brindes · Portal do Educador</title>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<style>
+:root{--navy:#0F2C4A;--green:#1A6B2A;--cyan:#37B1DA;--lime:#B6D752;--paper:#FBFAF7;--line:#e3e8ee;--muted:#6b7785}
+*{box-sizing:border-box}
+body{margin:0;font-family:'Segoe UI',Roboto,sans-serif;background:var(--paper);color:var(--navy)}
+
+/* Login */
+#login{max-width:380px;margin:60px auto;padding:0 18px}
+#login h1{font-size:20px;color:var(--navy)}
+#login input{width:100%;padding:12px 14px;border:1.5px solid var(--line);border-radius:10px;font-size:15px;margin-bottom:10px;font-family:inherit}
+.btn{border:none;border-radius:10px;padding:13px 18px;font-size:15px;font-weight:700;cursor:pointer;background:var(--cyan);color:#fff;width:100%}
+.btn:disabled{opacity:.6;cursor:not-allowed}
+#loginMsg{font-size:13px;margin-top:8px}
+
+/* Palco do sorteio (tela cheia escura para projeção) */
+#app{display:none}
+.palco{min-height:100vh;background:radial-gradient(circle at 50% 30%, #16395f 0%, #0F2C4A 55%, #081b30 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:30px;position:relative;overflow:hidden}
+.palco::before{content:"";position:absolute;inset:0;background-image:radial-gradient(rgba(55,177,218,.08) 1px,transparent 1px);background-size:26px 26px;pointer-events:none}
+.topo-info{position:absolute;top:20px;left:0;right:0;display:flex;justify-content:space-between;align-items:center;padding:0 28px;color:#cfe0ee;font-size:14px;z-index:2}
+.topo-info .ev{font-weight:700;color:#fff;font-size:16px;max-width:60%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.topo-info .stats{display:flex;gap:18px}
+.topo-info .stats b{color:var(--lime)}
+.voltar{position:absolute;top:18px;right:18px;background:rgba(255,255,255,.12);color:#fff;border:none;border-radius:8px;padding:7px 12px;font-size:12px;cursor:pointer;z-index:3}
+
+.brinde-label{color:var(--cyan);font-size:clamp(16px,2.4vw,26px);font-weight:700;text-transform:uppercase;letter-spacing:2px;margin-bottom:10px;z-index:2}
+.brinde-nome{color:#fff;font-size:clamp(22px,3.5vw,40px);font-weight:800;margin-bottom:30px;z-index:2;min-height:1.2em}
+
+.display{z-index:2;width:100%;max-width:1100px}
+.nome-giro{font-size:clamp(34px,8vw,92px);font-weight:800;color:#fff;line-height:1.05;letter-spacing:-1px;min-height:1.1em;transition:opacity .1s;word-break:break-word}
+.nome-giro.embaralhando{color:var(--cyan);opacity:.92}
+.nome-giro.vencedor{color:var(--lime);text-shadow:0 0 40px rgba(182,215,82,.5);animation:venceu .6s ease}
+@keyframes venceu{0%{transform:scale(.7);opacity:0}60%{transform:scale(1.08)}100%{transform:scale(1);opacity:1}}
+.sub-vencedor{color:#cfe0ee;font-size:clamp(15px,2vw,22px);margin-top:14px;min-height:1.2em;z-index:2}
+
+.contagem{font-size:clamp(80px,20vw,220px);font-weight:800;color:var(--lime);line-height:1;z-index:2;animation:pulso .9s ease}
+@keyframes pulso{0%{transform:scale(.4);opacity:0}50%{transform:scale(1.15);opacity:1}100%{transform:scale(1);opacity:1}}
+
+.controles{position:absolute;bottom:30px;left:0;right:0;display:flex;flex-direction:column;align-items:center;gap:14px;z-index:3}
+.linha-brinde{display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:center}
+.linha-brinde input{padding:13px 16px;border-radius:10px;border:none;font-size:16px;font-family:inherit;width:min(340px,70vw);text-align:center}
+.btn-sortear{background:linear-gradient(135deg,var(--green),var(--cyan));color:#fff;border:none;border-radius:12px;padding:16px 40px;font-size:20px;font-weight:800;cursor:pointer;box-shadow:0 6px 24px rgba(55,177,218,.35);transition:transform .1s}
+.btn-sortear:active{transform:scale(.97)}
+.btn-sortear:disabled{opacity:.5;cursor:not-allowed}
+.btn-sec{background:rgba(255,255,255,.14);color:#fff;border:none;border-radius:10px;padding:11px 18px;font-size:14px;font-weight:600;cursor:pointer}
+.ganhadores-bar{color:#cfe0ee;font-size:13px;max-width:90vw}
+.ganhadores-bar b{color:var(--lime)}
+.aviso{color:#ffd27a;font-size:14px;z-index:2}
+</style>
+</head>
+<body>
+
+<div id="login">
+  <h1>Sorteio de Brindes</h1>
+  <p style="color:var(--muted);font-size:13px;margin-top:-6px">Acesso restrito · Portal do Educador</p>
+  <input id="loginEmail" type="email" placeholder="E-mail" autocomplete="username">
+  <input id="loginSenha" type="password" placeholder="Senha" autocomplete="current-password">
+  <button class="btn" id="btnLogin">Entrar</button>
+  <div id="loginMsg"></div>
+</div>
+
+<div id="app">
+  <div class="palco">
+    <div class="topo-info">
+      <span class="ev" id="evNome">—</span>
+      <span class="stats">Participantes: <b id="nPart">0</b></span>
+    </div>
+    <button class="voltar" id="btnSair">Sair</button>
+
+    <div class="brinde-label" id="brindeLabel">Sorteio</div>
+    <div class="brinde-nome" id="brindeNome"></div>
+
+    <div class="display">
+      <div class="nome-giro" id="nomeGiro">Pronto para sortear</div>
+      <div class="sub-vencedor" id="subVencedor"></div>
+    </div>
+
+    <div class="controles">
+      <div class="linha-brinde">
+        <input id="brindeInput" placeholder="Nome do brinde (ex: Tablet, Kit pedagógico)" maxlength="60">
+      </div>
+      <button class="btn-sortear" id="btnSortear">🎁 Sortear</button>
+      <div class="ganhadores-bar" id="ganhadoresBar"></div>
+      <button class="btn-sec" id="btnReset" style="display:none">Reiniciar sorteios deste evento</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyCHLrwHDUsVKKyIgHlbpkWsv1dOTBfY52M",
+  authDomain: "portal-do-educador-interno.firebaseapp.com",
+  projectId: "portal-do-educador-interno",
+  storageBucket: "portal-do-educador-interno.firebasestorage.app",
+  messagingSenderId: "133947200175",
+  appId: "1:133947200175:web:a819a5a7c1196544d97a5a"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+const $ = id => document.getElementById(id);
+const eventoId = new URLSearchParams(location.search).get('evento');
+let evento=null, presentes=[], usuarioLogado=null, sorteando=false;
+
+function esc(s){return (s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+
+/* ---- Auth (mesmo login do Hub) ---- */
+async function sha256(txt){
+  const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(txt));
+  return [...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+async function fazerLogin(){
+  const email=$('loginEmail').value.trim().toLowerCase();
+  const senha=$('loginSenha').value;
+  if(!email||!senha){$('loginMsg').textContent='Preencha e-mail e senha.';$('loginMsg').style.color='#b53636';return;}
+  $('btnLogin').disabled=true;
+  try{
+    const doc=await db.collection('usuarios').doc(email).get();
+    if(!doc.exists){ falhaLogin(); return; }
+    const u=doc.data();
+    if(u.ativo===false){ $('loginMsg').textContent='Usuário inativo.';$('loginMsg').style.color='#b53636';$('btnLogin').disabled=false;return; }
+    if(await sha256(senha)!==u.senhaHash){ falhaLogin(); return; }
+    usuarioLogado={email, nome:u.nome||email};
+    $('login').style.display='none';$('app').style.display='block';
+    iniciar();
+  }catch(e){ $('loginMsg').textContent='Erro ao conectar. Tente novamente.';$('loginMsg').style.color='#b53636'; }
+  $('btnLogin').disabled=false;
+}
+function falhaLogin(){$('loginMsg').textContent='E-mail ou senha incorretos.';$('loginMsg').style.color='#b53636';$('btnLogin').disabled=false;}
+
+window.addEventListener('DOMContentLoaded',()=>{ $('login').style.display='block';$('app').style.display='none'; });
+$('btnLogin').onclick=fazerLogin;
+$('loginSenha').addEventListener('keydown',e=>{if(e.key==='Enter')fazerLogin();});
+$('btnSair').onclick=()=>{usuarioLogado=null;location.reload();};
+
+/* ---- App ---- */
+async function iniciar(){
+  if(!eventoId){$('evNome').textContent='Evento não informado no link';$('btnSortear').disabled=true;return;}
+  const ev=await db.collection('eventos').doc(eventoId).get();
+  evento = ev.exists?ev.data():null;
+  $('evNome').textContent = evento ? (evento.nomeEvento||evento.curso||'Evento') : 'Evento não encontrado';
+  // escuta presentes em tempo real (só quem foi credenciado)
+  db.collection('eventos').doc(eventoId).collection('inscritos').onSnapshot(snap=>{
+    presentes = snap.docs.map(d=>({id:d.id,...d.data()})).filter(i=>i.presente);
+    atualizarContadores();
+  });
+}
+
+function disponiveis(){ return presentes.filter(i=>!i.ganhouBrinde); }
+function ganhadores(){ return presentes.filter(i=>i.ganhouBrinde).sort((a,b)=>(a.brindeNome||'').localeCompare(b.brindeNome||'')); }
+
+function atualizarContadores(){
+  const disp=disponiveis().length;
+  $('nPart').textContent = disp;
+  const gs=ganhadores();
+  if(gs.length){
+    $('ganhadoresBar').innerHTML='🏆 Já ganharam: '+gs.map(g=>`<b>${esc(g.nome)}</b> (${esc(g.brindeNome||'brinde')})`).join(' · ');
+    $('btnReset').style.display='inline-block';
+  }else{
+    $('ganhadoresBar').innerHTML='';
+    $('btnReset').style.display='none';
+  }
+  if(disp===0 && presentes.length>0 && !sorteando){
+    $('nomeGiro').textContent='Todos já foram sorteados 🎉';
+  }
+}
+
+/* ---- Sorteio: contagem regressiva e revela ---- */
+$('btnSortear').onclick=async()=>{
+  if(sorteando) return;
+  const pool=disponiveis();
+  if(pool.length===0){ alert('Não há participantes disponíveis para sortear.\\nVerifique se há credenciados, ou reinicie os sorteios.'); return; }
+
+  const brinde=$('brindeInput').value.trim();
+  sorteando=true;
+  $('btnSortear').disabled=true;
+  $('brindeInput').disabled=true;
+  $('subVencedor').textContent='';
+  $('brindeNome').textContent = brinde ? '🎁 '+brinde : '';
+  $('brindeLabel').textContent = brinde ? 'Sorteando' : 'Sorteio';
+
+  // escolhe o ganhador AGORA (sorteio justo, antes da animação)
+  const vencedor = pool[Math.floor(Math.random()*pool.length)];
+
+  // 1) embaralha nomes por ~2.2s
+  const giro=$('nomeGiro');
+  giro.className='nome-giro embaralhando';
+  const t0=Date.now();
+  await new Promise(res=>{
+    const iv=setInterval(()=>{
+      const r=pool[Math.floor(Math.random()*pool.length)];
+      giro.textContent=r.nome;
+      if(Date.now()-t0>2200){ clearInterval(iv); res(); }
+    },70);
+  });
+
+  // 2) contagem regressiva 3,2,1
+  for(const n of [3,2,1]){
+    giro.className='contagem';
+    giro.textContent=n;
+    await espera(750);
+  }
+
+  // 3) revela o vencedor
+  giro.className='nome-giro vencedor';
+  giro.textContent=vencedor.nome;
+  const partes=[vencedor.escola, vencedor.municipio].filter(Boolean).join(' · ');
+  $('subVencedor').textContent = partes;
+  $('brindeLabel').textContent = brinde ? 'Ganhador do brinde' : 'Ganhador';
+  soar();
+
+  // 4) grava no Firebase (sai dos próximos sorteios)
+  try{
+    await db.collection('eventos').doc(eventoId).collection('inscritos').doc(vencedor.id).update({
+      ganhouBrinde:true,
+      brindeNome: brinde || 'Brinde',
+      sorteadoEm: firebase.firestore.FieldValue.serverTimestamp()
+    });
+  }catch(e){ console.warn('Erro ao gravar ganhador',e); }
+
+  $('brindeInput').value='';
+  $('brindeInput').disabled=false;
+  $('btnSortear').disabled=false;
+  sorteando=false;
+};
+
+$('btnReset').onclick=async()=>{
+  const gs=ganhadores();
+  if(!gs.length) return;
+  if(!confirm('Reiniciar os sorteios deste evento?\\nTodos os '+gs.length+' ganhadores voltam a participar.')) return;
+  for(const g of gs){
+    try{ await db.collection('eventos').doc(eventoId).collection('inscritos').doc(g.id).update({ganhouBrinde:false, brindeNome:'', sorteadoEm:null}); }catch(e){}
+  }
+  $('nomeGiro').className='nome-giro';
+  $('nomeGiro').textContent='Pronto para sortear';
+  $('subVencedor').textContent='';
+  $('brindeNome').textContent='';
+  $('brindeLabel').textContent='Sorteio';
+};
+
+function espera(ms){return new Promise(r=>setTimeout(r,ms));}
+
+/* som simples (beep) usando Web Audio — opcional, falha em silêncio */
+function soar(){
+  try{
+    const ac=new (window.AudioContext||window.webkitAudioContext)();
+    const notas=[523,659,784,1047];
+    notas.forEach((f,i)=>{
+      const o=ac.createOscillator(), g=ac.createGain();
+      o.frequency.value=f; o.type='triangle';
+      o.connect(g); g.connect(ac.destination);
+      const t=ac.currentTime+i*0.12;
+      g.gain.setValueAtTime(0.0001,t);
+      g.gain.exponentialRampToValueAtTime(0.25,t+0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001,t+0.3);
+      o.start(t); o.stop(t+0.32);
+    });
+  }catch(e){}
+}
+</script>
+</body>
+</html>
