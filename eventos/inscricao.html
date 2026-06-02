@@ -60,6 +60,7 @@ select:disabled{opacity:.6;cursor:not-allowed}
       <select id="estado"><option value="">Selecione o estado</option></select>
       <label>Município</label>
       <select id="municipio" disabled><option value="">Selecione o estado primeiro</option></select>
+      <div id="oficinasArea" style="display:none;margin-top:8px"></div>
       <button class="btn" id="btn">Confirmar inscrição</button>
       <div class="msg" id="msg"></div>
     </div>
@@ -127,11 +128,54 @@ async function carregarEvento(){
     evento = snap.data();
     if(evento.inscricoesAbertas === false){ $('evNome').textContent = 'Inscrições encerradas'; $('btn').disabled = true; return; }
     $('evNome').textContent = evento.nomeEvento || evento.curso || 'Evento';
+    if(evento.temOficinas){ await carregarOficinas(); }
   }catch(e){
     $('evNome').textContent = 'Erro ao carregar evento';
     erro('Não foi possível conectar. Tente novamente em instantes.');
   }
 }
+
+let oficinasEvento=[];
+async function carregarOficinas(){
+  try{
+    const snap=await db.collection('eventos').doc(eventoId).collection('oficinas').orderBy('horario').get();
+    oficinasEvento=snap.docs.map(d=>({id:d.id,...d.data()}));
+    if(!oficinasEvento.length) return;
+    const html=oficinasEvento.map(o=>{
+      const cheia=o.vagaLimitada && (o.inscritos||0)>=o.vagas;
+      const vagaTxt=o.vagaLimitada ? `${Math.max(0,o.vagas-(o.inscritos||0))} vaga(s)` : 'Aberta';
+      const det=[o.horario, o.local, o.palestrante].filter(Boolean).map(escHtml).join(' · ');
+      return `<label class="ofi-item ${cheia?'cheia':''}" style="display:flex;gap:10px;align-items:flex-start;padding:11px;border:1.5px solid var(--line);border-radius:10px;margin-bottom:8px;cursor:${cheia?'not-allowed':'pointer'};opacity:${cheia?'.55':'1'}">
+        <input type="checkbox" class="ofi-chk" value="${o.id}" data-horario="${escHtml(o.horario||'')}" ${cheia?'disabled':''} style="width:auto;margin-top:3px">
+        <span style="flex:1">
+          <span style="font-weight:700;color:var(--navy);display:block">${escHtml(o.nome)} ${cheia?'<span style="color:#b53636;font-size:11px">· LOTADA</span>':''}</span>
+          ${det?`<span style="font-size:12px;color:var(--muted)">${det}</span>`:''}
+          <span style="font-size:11px;color:var(--cyan);font-weight:600;display:block;margin-top:2px">${vagaTxt}</span>
+        </span>
+      </label>`;
+    }).join('');
+    $('oficinasArea').innerHTML=`<label>Escolha as oficinas (respeite os horários)</label>${html}<p class="msg" id="ofiAviso" style="font-size:12px;margin:0"></p>`;
+    $('oficinasArea').style.display='block';
+    // valida choque de horário ao marcar
+    document.querySelectorAll('.ofi-chk').forEach(chk=>chk.onchange=()=>validarHorarios(chk));
+  }catch(e){ /* se falhar, segue sem oficinas */ }
+}
+
+function validarHorarios(chkAlterado){
+  if(!chkAlterado.checked) { $('ofiAviso').textContent=''; return; }
+  const h=chkAlterado.dataset.horario;
+  if(!h) return;
+  const marcados=[...document.querySelectorAll('.ofi-chk:checked')];
+  const conflito=marcados.find(c=>c!==chkAlterado && c.dataset.horario && c.dataset.horario===h);
+  if(conflito){
+    chkAlterado.checked=false;
+    $('ofiAviso').textContent='Você já escolheu outra oficina nesse mesmo horário ('+h+').';
+    $('ofiAviso').style.color='#b53636';
+  }else{
+    $('ofiAviso').textContent='';
+  }
+}
+function escHtml(s){return (s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
 
 function erro(t){ const m=$('msg'); m.className='msg show err'; m.textContent=t; }
 
@@ -183,7 +227,11 @@ $('btn').onclick = async () => {
       new QRCode($('qr'), { text: ja.codigoInscricao || codigo, width:180, height:180, colorDark:'#0F2C4A', colorLight:'#ffffff' });
       return;
     }
-    await col.add({
+    // oficinas escolhidas
+    const oficinasEscolhidas=[...document.querySelectorAll('.ofi-chk:checked')].map(c=>c.value);
+
+    const novoInscritoRef = col.doc();
+    const dadosInscrito = {
       nome, email,
       cpf: cpfRaw,
       escola: $('escola').value.trim(),
@@ -193,15 +241,38 @@ $('btn').onclick = async () => {
       presente: false,
       checkinEm: null,
       codigoCert: null,
+      oficinas: oficinasEscolhidas,
       inscritoEm: firebase.firestore.FieldValue.serverTimestamp()
-    });
+    };
+
+    if(oficinasEscolhidas.length){
+      // TRANSAÇÃO: reserva vaga atomicamente (não fura vaga mesmo com muitos simultâneos)
+      await db.runTransaction(async tx=>{
+        const refs = oficinasEscolhidas.map(oid=>db.collection('eventos').doc(eventoId).collection('oficinas').doc(oid));
+        const snaps = await Promise.all(refs.map(r=>tx.get(r)));
+        // valida vagas
+        snaps.forEach((s,idx)=>{
+          if(!s.exists) throw new Error('Oficina indisponível. Recarregue a página.');
+          const o=s.data();
+          if(o.vagaLimitada && (o.inscritos||0) >= o.vagas){
+            throw new Error('A oficina "'+(o.nome||'')+'" lotou. Escolha outra e tente de novo.');
+          }
+        });
+        // incrementa contadores e grava inscrito
+        refs.forEach(r=>tx.update(r,{inscritos:firebase.firestore.FieldValue.increment(1)}));
+        tx.set(novoInscritoRef, dadosInscrito);
+      });
+    }else{
+      await novoInscritoRef.set(dadosInscrito);
+    }
     $('form-area').style.display = 'none';
     $('ok').classList.add('show');
     $('meuCod').textContent = codigo;
     new QRCode($('qr'), { text: codigo, width: 180, height: 180, colorDark: '#0F2C4A', colorLight: '#ffffff' });
   }catch(e){
     $('btn').disabled = false; $('btn').textContent = 'Confirmar inscrição';
-    erro('Não foi possível concluir a inscrição. Verifique sua conexão e tente novamente.');
+    const msgLotou = e && e.message && /lot|indispon/i.test(e.message);
+    erro(msgLotou ? e.message : 'Não foi possível concluir a inscrição. Verifique sua conexão e tente novamente.');
   }
 };
 
